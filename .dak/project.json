@@ -1,0 +1,10 @@
+{
+  "dak_schema": 1,
+  "project_id": "33bb37d5-0faa-41c4-af2a-e9f179653560",
+  "name": "rta-smc-complaints-module",
+  "slug": "rta-smc-complaints-module",
+  "prefix": "RTAS",
+  "created_utc": "2026-09-18T06:33:05Z",
+  "scaffold_kit_version": "4.4.1",
+  "ports": { "frontend": 3100, "backend": 8100, "db": 5432 }
+}
