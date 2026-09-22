@@ -4,14 +4,15 @@ import tailwindcss from "@tailwindcss/vite"
 import { fileURLToPath, URL } from "node:url"
 
 /**
- * `base` is the repository name on GitHub Pages, which serves the site from
- * a subpath — without it every asset 404s. Only on build: `npm run dev` stays
- * at the root. The app uses a hash router, so deep links need no 404 fallback.
+ * Served from the root of its own domain.
+ *
+ * GitHub Pages serves a project site from `/<repo>/`, which would need a base
+ * path here — but this deploys to a custom domain instead, where the site is
+ * the root. The `CNAME` in `public/` is what tells Pages that. If the custom
+ * domain is ever dropped, `base` has to come back or every asset 404s.
  */
-const REPO = "/rta-smartinvestigationinitiative-demo/"
-
-export default defineConfig(({ command }) => ({
-  base: command === "build" ? REPO : "/",
+export default defineConfig(() => ({
+  base: "/",
   plugins: [react(), tailwindcss()],
   server: {
     host: "0.0.0.0",
