@@ -1,18 +1,26 @@
-# Lint, test and build on every push.
+# Lint, test and build on every push, then publish to GitHub Pages.
 #
-# Deployment is handled by Netlify, which builds from this repository on its
-# own — there is no GitHub Pages job, because Pages puts the account name in
-# the URL and this demo is addressed by its project name instead.
-name: CI
+# The deploy job needs Pages switched on with the Actions source:
+# Settings → Pages → Build and deployment → Source: GitHub Actions.
+# Without it the build still runs but the deploy step fails.
+name: Deploy demo
 
 on:
   push:
     branches: [main]
-  pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
 jobs:
-  check:
+  build:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -22,7 +30,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           # Vite 8 requires ^20.19 || >=22.12, so 20 sits on the boundary and
-          # depends on which 20.x the runner resolves. 22 is unambiguous.
+          # depends on which 20.x the runner resolves. 22 is unambiguous —
+          # the first CI run failed on 20 for exactly this reason.
           node-version: 22
           cache: npm
           cache-dependency-path: frontend/package-lock.json
@@ -30,3 +39,16 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
