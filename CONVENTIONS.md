@@ -449,6 +449,34 @@ before they have read the statement defeats the exercise.
 - Seeded complaints are verified if they are past `New`; a freshly delivered
   one is not, which is what puts the button in front of the officer.
 
+## RTA's documents are the source of truth
+
+Two documents from the RTA team define the domain, and they win over anything
+inferred from the SMC alerts portal:
+
+- **`Book2.xlsx`** — a CRM export of 9 cases with their investigation forms.
+  Generated reference data, not production records. Transcribed verbatim into
+  `src/data/rtaCases.js` by script, which is why that file says *do not
+  hand-edit* — regenerate it rather than patching it.
+- **`Investigation_Office_Workflow.pptx`** — the business process. Slides 5
+  and 6 are BPMN process maps; they carry detail the text slides do not,
+  including the termination approval chain and the fine-dispute route.
+
+**Every picklist in `catalog.js` comes from the export.** Where RTA's value is
+bilingual, `i18n/ar/domain.js` uses *their* Arabic, not a translation of ours.
+If you need a new value, check the workbook before inventing one.
+
+`COMPLAINTS` is `RTA_CASES` + 96 generated rows in the same shape. The real
+ones sort to the top by date and are what a demo should open.
+
+## Statements carry `dir="auto"`
+
+RTA's driver and investigator statements are written in whichever language the
+interview happened in, so an Arabic transcript has to render right-to-left
+inside an English page. `dir="auto"` lets the browser pick direction from the
+first strong character. Any field holding user-written prose needs it —
+`InvestigationForm.jsx` is the reference.
+
 ## The vocabulary rule
 
 **Nothing in the UI may name an action the officer does not have.** The

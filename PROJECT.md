@@ -153,6 +153,56 @@ See `CONVENTIONS.md` for the full rationale and the two house rules set aside.
 
 ## Log
 
+### Phase 11 — Aligned to RTA's workflow and data (2026-09-22)
+
+The RTA team sent `Book2.xlsx` (9 CRM cases with their investigation forms)
+and `Investigation_Office_Workflow.pptx` (the Investigation Office process).
+Both changed the domain model, which until then had been inferred from the POC
+scope document and the SMC alerts portal.
+
+**RTA's cases are now seed data.** All 9 are transcribed verbatim into
+`src/data/rtaCases.js` — generated reference data, confirmed with the team, not
+production records. They carry what we could not write convincingly: the Arabic
+Q&A driver interviews, the investigator's reasoning, the real fine codes. Two
+are wholly in Arabic. The generator still produces 96 rows for volume, in the
+same shape.
+
+**The decision model was wrong and is now RTA's.** False Positive / No Fine
+Required / Issue Fine / Escalate became the four verified findings from the
+deck — *Valid complaint • Guilty*, *Valid complaint • Not guilty*, *Invalid
+complaint • No event exists*, *Essential information missing* — plus
+*Face-to-face investigation needed*. A guilty finding now carries a real RTA
+fine code (1-49, 1-52, 1-53, 1-60) and a suspension in days.
+
+**The Investigation Form exists.** A fifth workspace tab carrying sheet 2's
+field set, including the three statements. `decide()` writes into it rather
+than the two living separately — the form is the record the process exists to
+produce.
+
+**Two controls that were missing entirely:**
+
+- The **completeness gate** — a case short of a date, time, side/plate number
+  or description cannot be worked at all, and the only route out is back to
+  Customer Happiness. Verified: such a case offers exactly one action.
+- The **missing-recording exception** — vehicle suspended, driver permit
+  blocked, company fined and notified, investigation switched to face to face,
+  and a release once resolved. This forced company-level fines and a release
+  action, neither of which existed.
+
+**Lost Item** is a second case type with its own finding and no driver fine.
+
+Findings worth recording:
+
+- The process maps on slides 5–6 go beyond the text slides: termination runs a
+  three-level approval chain (Chief → Manager → Director) before the decision
+  is released to companies, and a disputed fine goes to the Dubai Public
+  Transport Agency Grievance Committee. Neither is built — noted as scope.
+- RTA's real SLA is 5–9 days with cases resolved in 1–7. The five-minute
+  handling clock stays as the POC's target; the gap is the before/after story,
+  not a contradiction.
+- The Arabic statements are the first real test of the RTL layout against long
+  free text. They need `dir="auto"`, not the page direction.
+
 ### Phase 10 — Take Action, and a portal that keeps moving (2026-09-22)
 
 **The actions moved to where SMC keeps them.** They had been built under the

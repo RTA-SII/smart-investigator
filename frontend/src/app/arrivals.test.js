@@ -21,7 +21,7 @@ import { ROLES } from "@/data/personas"
 import { chtState, isQueued } from "@/lib/cht"
 
 const OFFICER = ROLES[0]
-const CLOSE = { id: "noFine", label: "No Fine Required", note: "n/a" }
+const CLOSE = { id: "notGuilty", label: "Driver Not Guilty", note: "n/a" }
 
 beforeEach(() => {
   signIn("officer")
@@ -64,7 +64,7 @@ describe("the officer's desk", () => {
 
   it("clears when the complaint is escalated away", () => {
     const id = deliverArrival(0)
-    decide(id, { id: "escalate", label: "Escalate to Supervisor", note: "n/a" })
+    decide(id, { id: "faceToFace", label: "Face-to-Face Investigation Needed", note: "n/a" })
     expect(deskIsClear()).toBe(true)
   })
 })

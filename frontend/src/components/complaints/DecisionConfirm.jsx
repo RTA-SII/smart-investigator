@@ -3,14 +3,16 @@ import { X } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { Choice } from "@/components/ui/Form"
 import { OFFICERS, officerLoads } from "@/data/personas"
+import { FINE_SUB_CATEGORIES, SUSPENSION_PERIODS } from "@/data/catalog"
 import { useComplaints } from "@/app/complaintStore"
+import { useT } from "@/i18n"
 
-/** Suspensions that can ride alongside a fine (POC scope §8). */
+/** RTA's `Action Taken` for a guilty finding. */
 const PENALTY_CHOICES = [
-  { value: "", label: "Fine only" },
-  { value: "Driver Suspended", label: "Suspend driver" },
-  { value: "Vehicle Suspended", label: "Suspend vehicle" },
-  { value: "Permit Suspended", label: "Suspend permit" },
+  { value: "Verbal Warning", label: "Verbal warning" },
+  { value: "Driver Fine", label: "Driver fine" },
+  { value: "Fine & Suspension", label: "Fine and suspension" },
+  { value: "Termination", label: "Termination" },
 ]
 
 /**
@@ -20,7 +22,10 @@ const PENALTY_CHOICES = [
  */
 export function DecisionConfirm({ action, complaint, role, onCancel, onConfirm }) {
   const complaints = useComplaints()
-  const [penalty, setPenalty] = useState("")
+  const t = useT()
+  const [penalty, setPenalty] = useState("Driver Fine")
+  const [fineSubCategory, setFineSubCategory] = useState(FINE_SUB_CATEGORIES[0])
+  const [suspensionDays, setSuspensionDays] = useState(SUSPENSION_PERIODS[0])
   // An unassigned complaint still has to submit somebody: without this the
   // select shows the first officer while the value stays empty, and
   // confirming would reassign it to nobody.
@@ -76,12 +81,48 @@ export function DecisionConfirm({ action, complaint, role, onCancel, onConfirm }
           )}
 
           {action.penalties && (
-            <Block
-              label="Additional penalty"
-              hint="A fine may be issued on its own, or alongside a suspension."
-            >
-              <Choice options={PENALTY_CHOICES} value={penalty} onChange={setPenalty} />
-            </Block>
+            <>
+              <Block
+                label="Action taken"
+                hint="What follows from the finding, recorded on the investigation form."
+              >
+                <Choice options={PENALTY_CHOICES} value={penalty} onChange={setPenalty} />
+              </Block>
+
+              <Block
+                label="Fine sub-category"
+                hint="The RTA fine code the finding is raised under."
+              >
+                <select
+                  aria-label={t("Fine sub-category")}
+                  value={fineSubCategory}
+                  onChange={(e) => setFineSubCategory(e.target.value)}
+                  className="w-full cursor-pointer rounded-xl border-[1px] border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm focus:ring-2 focus:ring-[var(--ring)] focus:outline-none"
+                >
+                  {FINE_SUB_CATEGORIES.map((f) => (
+                    <option key={f} value={f}>
+                      {f}
+                    </option>
+                  ))}
+                </select>
+              </Block>
+
+              {penalty === "Fine & Suspension" && (
+                <Block
+                  label="Suspension period"
+                  hint="How many days the driver is suspended for."
+                >
+                  <Choice
+                    options={SUSPENSION_PERIODS.map((d) => ({
+                      value: d,
+                      label: `${d} days`,
+                    }))}
+                    value={suspensionDays}
+                    onChange={setSuspensionDays}
+                  />
+                </Block>
+              )}
+            </>
           )}
 
           {action.officers && (
@@ -123,7 +164,9 @@ export function DecisionConfirm({ action, complaint, role, onCancel, onConfirm }
           </Button>
           <Button
             variant={destructive ? "destructive" : "primary"}
-            onClick={() => onConfirm({ note, penalty, officer })}
+            onClick={() =>
+              onConfirm({ note, penalty, officer, fineSubCategory, suspensionDays })
+            }
           >
             Confirm as {role.title}
           </Button>

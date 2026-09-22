@@ -1,7 +1,6 @@
 import {
   CATEGORIES,
   MANUAL_CHANNELS,
-  PENALTIES,
   STATEMENTS,
   CHANNELS,
   COMPANIES,
@@ -15,6 +14,14 @@ import { DRIVER_FIRST, DRIVER_LAST, FIRST, LAST } from "./names"
 import { frameFor } from "./evidenceFrames"
 import { pick, rng } from "./rand"
 import { buildComments } from "./comments"
+import { RTA_CASES } from "./rtaCases"
+import {
+  CASE_TYPES,
+  SATISFACTION,
+  SUSPENSION_PERIODS,
+  FINE_SUB_CATEGORIES,
+  INVESTIGATION_METHODS,
+} from "./catalog"
 
 /**
  * Deterministic complaint dataset.
@@ -113,8 +120,10 @@ function buildOne(i, fresh = false) {
   const ageMinutes = fresh ? 0 : aged
   const receivedAt = new Date(NOW.getTime() - ageMinutes * 60_000).toISOString()
 
+  // Conduct cases skew urgent — assault and harassment are what RTA treats
+  // as high priority, and the generated mix should reflect that.
   const priority =
-    category === "Driver Behaviour"
+    category === "Driver Conduct"
       ? r() < 0.28
         ? "Critical"
         : r() < 0.7
@@ -133,17 +142,20 @@ function buildOne(i, fresh = false) {
 
   const ai = buildAi(r, type, category)
 
+  // RTA's verified findings, and the action that follows from each.
   let outcome = null
   let penalty = null
   if (stage === "Closed") {
     if (ai.verdict === "Confirmed") {
-      outcome = "Fine Issued"
-      // A minority of upheld cases also suspend something.
-      if (r() < 0.32) penalty = pick(r, PENALTIES)
+      outcome = "Valid Complaint - Guilty"
+      penalty =
+        r() < 0.32 ? "Fine & Suspension" : r() < 0.7 ? "Driver Fine" : "Verbal Warning"
     } else if (ai.verdict === "False Positive") {
-      outcome = "False Positive"
+      outcome = "Invalid Complaint - No Event Exists"
+      penalty = "Not guilty"
     } else {
-      outcome = r() < 0.5 ? "No Fine Required" : "Fine Issued"
+      outcome = "Valid Complaint - Not Guilty"
+      penalty = "Not guilty"
     }
   }
 
@@ -187,7 +199,23 @@ function buildOne(i, fresh = false) {
       { kind: "doc", label: "CRM complaint transcript", time: receivedAt, frame: null },
     ],
     narrative: buildNarrative(r, type),
+    caseType: CASE_TYPES[0],
+    satisfaction: stage === "Closed" ? pick(r, SATISFACTION) : null,
+    // RTA's CRM SLA runs in days, alongside our five-minute handling clock.
+    slaDueAt: new Date(new Date(receivedAt).getTime() + 7 * 86_400_000).toISOString(),
   }
+
+  // The completeness gate (deck slide 2): a case cannot be worked without a
+  // date, a time, a side or plate number, and a description. Roughly one in
+  // eight arrives short, so the gate is demonstrable.
+  complaint.incomplete = !fresh && r() < 0.12
+  if (complaint.incomplete) complaint.sideNumber = null
+
+  // Lynx does not always hold the footage, and that is its own exception
+  // flow (deck slide 4) rather than simply a failed check.
+  complaint.recordingAvailable = r() > 0.08
+
+  complaint.form = buildForm(r, complaint)
 
   // Who typed it in. Unlike the assignee this *can* be the signed-in officer:
   // logging a complaint is not the same as being handed one, and their Manual
@@ -202,6 +230,33 @@ function buildOne(i, fresh = false) {
   complaint.timeline = buildTimeline(r, complaint)
   complaint.comments = buildComments(r, complaint)
   return complaint
+}
+
+/**
+ * The Investigation Form (workbook sheet 2).
+ *
+ * Only a settled case has one filled in; anything still open carries the
+ * shell, which the officer completes as they rule.
+ */
+function buildForm(r, c) {
+  const settled = c.stage === "Closed"
+  const guilty = c.outcome === "Valid Complaint - Guilty"
+  return {
+    id: `${c.id}_${c.receivedAt.slice(0, 10)}`,
+    date: settled ? c.receivedAt : null,
+    driverId: String(Math.floor(r() * 3_000_000) + 700_000),
+    nationality: pick(r, ["India", "Pakistan", "Bangladesh", "Ethiopia", "Nigeria"]),
+    actionTaken: settled ? c.penalty : null,
+    customerStatement: c.narrative,
+    driverStatement: null,
+    investigatorStatement: null,
+    fineCategory: guilty ? "Driver Fines" : null,
+    fineSubCategory: guilty ? pick(r, FINE_SUB_CATEGORIES) : null,
+    suspensionDays:
+      c.penalty === "Fine & Suspension" ? pick(r, SUSPENSION_PERIODS) : null,
+    investigationMethod: settled ? pick(r, INVESTIGATION_METHODS) : null,
+    caseLocation: c.location,
+  }
 }
 
 function buildNarrative(r, type) {
@@ -224,9 +279,71 @@ export function buildArrival(i) {
   return buildOne(i, true)
 }
 
-export const COMPLAINTS = Array.from({ length: 96 }, (_, i) => buildOne(i)).sort(
-  (a, b) => new Date(b.receivedAt) - new Date(a.receivedAt),
-)
+/**
+ * RTA's own cases, adapted to the generated shape.
+ *
+ * They arrive settled with their investigation form already filled — which is
+ * the point: the form tab carries real content from the first click, in RTA's
+ * own words.
+ */
+function fromRta(c, i) {
+  const r = rng(4_100_021 + i * 6361)
+  const officer = pick(r, SEED_OFFICERS)
+  return {
+    ...c,
+    stage: "Closed",
+    penalty: c.form.actionTaken,
+    slaMinutes: 5,
+    source: "RTA",
+    assignee: { id: officer.id, name: officer.name },
+    complainant: { name: null, phone: phone(r), tripRef: null },
+    driver: {
+      name: null,
+      licence: c.form.driverId,
+      permit: `PRM-${c.form.driverId}`,
+      nationality: c.form.nationality,
+      rating: (3.2 + r() * 1.7).toFixed(1),
+      priorComplaints: Math.floor(r() * 6),
+    },
+    ai: buildAi(r, c.type, c.category),
+    aiVerified: true,
+    incomplete: false,
+    recordingAvailable: c.form.investigationMethod !== "Face to Face & Camera",
+    evidence: [
+      { kind: "image", label: "In-cab camera still", time: c.receivedAt, frame: frameFor("In-cab camera still", i) },
+      { kind: "image", label: "Forward road view", time: c.receivedAt, frame: frameFor("Forward road view", i) },
+      { kind: "video", label: "Trip recording", time: c.receivedAt, frame: frameFor("Trip recording", i) },
+      { kind: "doc", label: "CRM complaint transcript", time: c.receivedAt, frame: null },
+    ],
+    loggedBy: null,
+    comments: [],
+    timeline: [
+      {
+        at: c.receivedAt,
+        actor: "CRM Gateway",
+        action: "Complaint received",
+        note: `Ingested from ${c.channel} · ${c.crmRef}`,
+      },
+      {
+        at: c.form.date ?? c.receivedAt,
+        actor: "Cross-Validation Engine",
+        action: "AI cross-validation completed",
+        note: c.form.investigationMethod ?? "Via Camera",
+      },
+      {
+        at: c.resolvedAt ?? c.receivedAt,
+        actor: "Investigation Office",
+        action: `Closed — ${c.outcome}`,
+        note: c.form.actionTaken ?? "",
+      },
+    ],
+  }
+}
+
+export const COMPLAINTS = [
+  ...RTA_CASES.map(fromRta),
+  ...Array.from({ length: 96 }, (_, i) => buildOne(i)),
+].sort((a, b) => new Date(b.receivedAt) - new Date(a.receivedAt))
 
 export function complaintById(id) {
   return COMPLAINTS.find((c) => c.id === id)

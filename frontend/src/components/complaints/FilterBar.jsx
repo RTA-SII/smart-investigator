@@ -2,10 +2,13 @@ import { Search, UserX } from "lucide-react"
 import { Card } from "@/components/ui/Card"
 import { FilterSelect } from "@/components/ui/FilterSelect"
 import {
+  CASE_TYPES,
   COMPANIES,
   COMPLAINT_TYPES,
   CHANNELS,
   MODES,
+  OUTCOMES,
+  PENALTIES,
   PRIORITIES,
   STAGES,
 } from "@/data/catalog"
@@ -41,6 +44,9 @@ export function FilterBar({ filters, onChange, count }) {
         <FilterSelect label="Stage" value={filters.stage} options={STAGES} onChange={set("stage")} />
         <FilterSelect label="Channel" value={filters.channel} options={CHANNELS} onChange={set("channel")} />
         <FilterSelect label="Complaint Type" value={filters.type} options={COMPLAINT_TYPES} onChange={set("type")} />
+        <FilterSelect label="Case Type" value={filters.caseType} options={CASE_TYPES} onChange={set("caseType")} />
+        <FilterSelect label="Verified Finding" value={filters.outcome} options={OUTCOMES} onChange={set("outcome")} />
+        <FilterSelect label="Action Taken" value={filters.actionTaken} options={PENALTIES} onChange={set("actionTaken")} />
         <FilterSelect
           label="Officer"
           value={filters.officer}

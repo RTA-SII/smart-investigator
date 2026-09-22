@@ -32,11 +32,16 @@ const LEGACY_KEYS = ["smc-complaints-data"]
  * everything else either closes it or sends it up.
  */
 export const TRANSITIONS = {
-  escalate: { stage: "Escalated", outcome: null },
+  guilty: { stage: "Closed", outcome: "Valid Complaint - Guilty" },
+  notGuilty: { stage: "Closed", outcome: "Valid Complaint - Not Guilty" },
+  invalid: { stage: "Closed", outcome: "Invalid Complaint - No Event Exists" },
+  matchFound: { stage: "Closed", outcome: "Potential Match Found" },
+  // Neither of these settles the case: one sends it back to Customer
+  // Happiness for the missing detail, the other escalates it for a
+  // face-to-face interview. Both need a supervisor.
+  missingInfo: { stage: "Returned", outcome: "Essential Information Missing" },
+  faceToFace: { stage: "Escalated", outcome: null },
   reassign: { stage: "Assigned", outcome: null },
-  falsePositive: { stage: "Closed", outcome: "False Positive" },
-  noFine: { stage: "Closed", outcome: "No Fine Required" },
-  issueFine: { stage: "Closed", outcome: "Fine Issued" },
 }
 
 const load = () => {
@@ -95,13 +100,23 @@ const replace = (id, patch) =>
  * Record a ruling. Moves the complaint's stage, sets its outcome, and appends
  * the officer's own words to the audit trail.
  */
-export function decide(id, action, { note, by, penalty, officer } = {}) {
+export function decide(
+  id,
+  action,
+  { note, by, penalty, officer, fineSubCategory, suspensionDays, method } = {},
+) {
   const complaint = complaintById(id)
   const move = TRANSITIONS[action.id]
   if (!complaint || !move) return
 
-  // A fine may carry a suspension alongside it; nothing else can.
-  const applied = action.id === "issueFine" ? (penalty ?? null) : null
+  // Only a guilty finding carries an enforcement action; every other finding
+  // records "Not guilty" or nothing at all.
+  const applied =
+    action.id === "guilty"
+      ? (penalty ?? "Driver Fine")
+      : move.stage === "Closed"
+        ? "Not guilty"
+        : null
 
   // Reassignment is the supervisor's fourth action, so it changes the owner
   // as well as the stage — the same officer means "return it to them".
@@ -118,6 +133,18 @@ export function decide(id, action, { note, by, penalty, officer } = {}) {
     // A reassigned complaint is live again, so the handling time restarts.
     pulledAt: action.id === "reassign" ? null : complaint.pulledAt,
     decision: { id: action.id, label: action.label, note, by, penalty: applied, at: stamp() },
+    // The decision writes into the investigation form rather than living
+    // beside it — the form is the record the process exists to produce.
+    form: {
+      ...complaint.form,
+      date: stamp(),
+      actionTaken: applied,
+      investigatorStatement: note?.trim() || action.note,
+      fineCategory: action.id === "guilty" ? "Driver Fines" : null,
+      fineSubCategory: action.id === "guilty" ? (fineSubCategory ?? null) : null,
+      suspensionDays: applied === "Fine & Suspension" ? (suspensionDays ?? null) : null,
+      investigationMethod: method ?? complaint.form?.investigationMethod ?? "Via Camera",
+    },
     timeline: [
       ...complaint.timeline,
       {
@@ -202,6 +229,59 @@ export function verifyAi(id) {
   })
 }
 
+/**
+ * The missing-recording exception (deck slide 4).
+ *
+ * When Lynx has no footage for the vehicle, the consequence is not a failed
+ * check — it is a compliance action in its own right, and it fires before
+ * anyone rules on the complaint: the vehicle is suspended, the driver's
+ * permit blocked, and the operating company fined and notified. The
+ * investigation then continues face to face.
+ */
+export function applyRecordingException(id, by) {
+  const complaint = complaintById(id)
+  if (!complaint || complaint.exception) return
+
+  replace(id, {
+    exception: {
+      raisedAt: stamp(),
+      vehicleSuspended: true,
+      permitBlocked: true,
+      companyFined: true,
+      released: false,
+    },
+    form: { ...complaint.form, investigationMethod: "Face to Face & Camera" },
+    timeline: [
+      ...complaint.timeline,
+      {
+        at: stamp(),
+        actor: by ?? "Investigation Office",
+        action: "Required recording unavailable",
+        note: `Vehicle suspended and permit blocked · company fine issued to ${complaint.company} and notified by email`,
+      },
+    ],
+  })
+}
+
+/** The vehicle comes back once the recording issue is fixed. */
+export function releaseVehicle(id, by) {
+  const complaint = complaintById(id)
+  if (!complaint?.exception || complaint.exception.released) return
+
+  replace(id, {
+    exception: { ...complaint.exception, released: true, releasedAt: stamp() },
+    timeline: [
+      ...complaint.timeline,
+      {
+        at: stamp(),
+        actor: by ?? "Investigation Office",
+        action: "Vehicle suspension released",
+        note: "Recording issue resolved — vehicle and permit restored",
+      },
+    ],
+  })
+}
+
 /** Next id in the seeded sequence, so filed complaints stay deterministic. */
 function nextId() {
   const highest = rows.reduce((max, c) => {
@@ -243,8 +323,19 @@ export function deliverTo(complaint, officer) {
 /** Insert a manual complaint, newest first, and hand back its id. */
 export function fileComplaint(complaint) {
   const id = nextId()
+  // The investigation form is numbered after its case, so re-stamp it: the
+  // complaint is issued a new id here and the form would otherwise keep the
+  // one the generator gave it.
+  const filed = {
+    ...complaint,
+    id,
+    form: complaint.form && {
+      ...complaint.form,
+      id: `${id}_${complaint.receivedAt.slice(0, 10)}`,
+    },
+  }
   commit(
-    [{ ...complaint, id }, ...rows].sort(
+    [filed, ...rows].sort(
       (a, b) => new Date(b.receivedAt) - new Date(a.receivedAt),
     ),
   )

@@ -2,9 +2,11 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import {
   allComplaints,
+  applyRecordingException,
   assign,
   complaintById,
   decide,
+  releaseVehicle,
   deliverTo,
   fileComplaint,
   resetComplaints,
@@ -22,35 +24,54 @@ describe("decide", () => {
 
   it("closes the complaint and records the outcome", () => {
     const before = openOne()
-    decide(before.id, { id: "falsePositive", label: "False Positive", note: "n/a" })
+    decide(before.id, { id: "invalid", label: "Invalid Complaint", note: "n/a" })
 
     const after = complaintById(before.id)
     expect(after.stage).toBe("Closed")
-    expect(after.outcome).toBe("False Positive")
+    expect(after.outcome).toBe("Invalid Complaint - No Event Exists")
   })
 
   it("carries a suspension alongside a fine, and only alongside a fine", () => {
     const a = openOne()
-    decide(a.id, { id: "issueFine", label: "Issue Fine", note: "n/a" }, {
-      penalty: "Vehicle Suspended",
+    decide(a.id, { id: "guilty", label: "Driver Guilty", note: "n/a" }, {
+      penalty: "Fine & Suspension",
     })
-    expect(complaintById(a.id).outcome).toBe("Fine Issued")
-    expect(complaintById(a.id).penalty).toBe("Vehicle Suspended")
+    expect(complaintById(a.id).outcome).toBe("Valid Complaint - Guilty")
+    expect(complaintById(a.id).penalty).toBe("Fine & Suspension")
 
-    // A penalty passed with any other action is ignored.
+    // A penalty passed with any other finding is ignored — RTA's form
+    // records "Not guilty" as the action taken instead.
     resetComplaints()
     const b = openOne()
-    decide(b.id, { id: "noFine", label: "No Fine Required", note: "n/a" }, {
-      penalty: "Driver Suspended",
+    decide(b.id, { id: "notGuilty", label: "Driver Not Guilty", note: "n/a" }, {
+      penalty: "Fine & Suspension",
     })
-    expect(complaintById(b.id).penalty).toBeNull()
+    expect(complaintById(b.id).penalty).toBe("Not guilty")
+    expect(complaintById(b.id).form.fineSubCategory).toBeNull()
+    expect(complaintById(b.id).form.suspensionDays).toBeNull()
+  })
+
+  it("writes the finding into the investigation form", () => {
+    const c = openOne()
+    decide(c.id, { id: "guilty", label: "Driver Guilty", note: "Camera confirms" }, {
+      penalty: "Fine & Suspension",
+      fineSubCategory: "1-49 Driving recklessly, or in a way that is dangerous to the public.",
+      suspensionDays: 5,
+    })
+
+    const form = complaintById(c.id).form
+    expect(form.actionTaken).toBe("Fine & Suspension")
+    expect(form.fineCategory).toBe("Driver Fines")
+    expect(form.fineSubCategory).toContain("1-49")
+    expect(form.suspensionDays).toBe(5)
+    expect(form.investigatorStatement).toBe("Camera confirms")
   })
 
   it("moves an escalation onto the supervisor's queue", () => {
     const before = openOne()
     expect(before.stage).not.toBe("Escalated")
 
-    decide(before.id, { id: "escalate", label: "Escalate to Supervisor", note: "n/a" })
+    decide(before.id, { id: "faceToFace", label: "Face-to-Face Investigation Needed", note: "n/a" })
 
     const escalated = allComplaints().filter((c) => c.stage === "Escalated")
     expect(escalated.map((c) => c.id)).toContain(before.id)
@@ -73,7 +94,7 @@ describe("decide", () => {
     const target = openOne()
     const entries = target.timeline.length
 
-    decide(target.id, { id: "falsePositive", label: "False Positive", note: "fallback" }, {
+    decide(target.id, { id: "invalid", label: "Invalid Complaint", note: "fallback" }, {
       note: "Camera shows the lane change was signalled.",
       by: "Layla Al-Hammadi · SMC-0318",
     })
@@ -88,7 +109,7 @@ describe("decide", () => {
 
   it("falls back to the action's own wording when the note is blank", () => {
     const target = openOne()
-    decide(target.id, { id: "falsePositive", label: "False Positive", note: "Evidence does not support" }, {
+    decide(target.id, { id: "invalid", label: "Invalid Complaint", note: "Evidence does not support" }, {
       note: "   ",
     })
     expect(complaintById(target.id).timeline.at(-1).note).toBe(
@@ -98,7 +119,7 @@ describe("decide", () => {
 
   it("ignores an unknown complaint or action", () => {
     const before = allComplaints()
-    decide("CMP-999999", { id: "falsePositive", label: "False Positive" })
+    decide("CMP-999999", { id: "invalid", label: "Invalid Complaint" })
     decide(openOne().id, { id: "not-a-thing", label: "?" })
     expect(allComplaints()).toBe(before)
   })
@@ -148,7 +169,7 @@ describe("decide — reassign (the supervisor's fourth action)", () => {
 
   it("never lets a closing action change the owner", () => {
     const before = held()
-    decide(before.id, { id: "issueFine", label: "Issue Fine" }, {
+    decide(before.id, { id: "guilty", label: "Driver Guilty" }, {
       officer: OFFICERS.find((o) => o.id !== before.assignee?.id),
     })
     expect(complaintById(before.id).assignee?.id).toBe(before.assignee?.id)
@@ -192,6 +213,66 @@ describe("assign", () => {
 
     const after = officerLoads(allComplaints()).find((o) => o.id === officer.id).load
     expect(after).toBe(before + 1)
+  })
+})
+
+describe("the missing-recording exception", () => {
+  beforeEach(() => resetComplaints())
+
+  const noRecording = () =>
+    allComplaints().find((c) => !c.recordingAvailable && !c.exception)
+
+  it("suspends the vehicle, blocks the permit and fines the company", () => {
+    const before = noRecording()
+    expect(before).toBeTruthy()
+
+    applyRecordingException(before.id, "Layla Al-Hammadi · SMC-0318")
+    const after = complaintById(before.id)
+
+    expect(after.exception.vehicleSuspended).toBe(true)
+    expect(after.exception.permitBlocked).toBe(true)
+    expect(after.exception.companyFined).toBe(true)
+    expect(after.exception.released).toBe(false)
+  })
+
+  it("switches the investigation to face to face", () => {
+    const id = noRecording().id
+    applyRecordingException(id)
+    expect(complaintById(id).form.investigationMethod).toBe("Face to Face & Camera")
+  })
+
+  it("logs the compliance action, naming the operator", () => {
+    const before = noRecording()
+    applyRecordingException(before.id)
+
+    const entry = complaintById(before.id).timeline.at(-1)
+    expect(entry.action).toBe("Required recording unavailable")
+    expect(entry.note).toContain(before.company)
+  })
+
+  it("cannot be raised twice", () => {
+    const id = noRecording().id
+    applyRecordingException(id)
+    const trail = complaintById(id).timeline.length
+    applyRecordingException(id)
+    expect(complaintById(id).timeline).toHaveLength(trail)
+  })
+
+  it("releases the vehicle once the recording issue is resolved", () => {
+    const id = noRecording().id
+    applyRecordingException(id)
+    releaseVehicle(id)
+
+    const after = complaintById(id)
+    expect(after.exception.released).toBe(true)
+    expect(after.timeline.at(-1).action).toBe("Vehicle suspension released")
+  })
+
+  it("will not release a vehicle that was never suspended", () => {
+    const clean = allComplaints().find((c) => c.recordingAvailable && !c.exception)
+    const trail = clean.timeline.length
+    releaseVehicle(clean.id)
+    expect(complaintById(clean.id).timeline).toHaveLength(trail)
   })
 })
 
@@ -251,6 +332,15 @@ describe("fileComplaint", () => {
     expect(Number(b.replace("CMP-", ""))).toBe(Number(a.replace("CMP-", "")) + 1)
   })
 
+  it("renumbers the investigation form to match the case", () => {
+    const id = fileComplaint({
+      receivedAt: new Date().toISOString(),
+      timeline: [],
+      form: { id: "CMP-000000_2026-01-01", driverId: "1" },
+    })
+    expect(complaintById(id).form.id.startsWith(id)).toBe(true)
+  })
+
   it("never collides with the seeded set", () => {
     const ids = new Set(allComplaints().map((c) => c.id))
     const id = fileComplaint({ receivedAt: new Date().toISOString(), timeline: [] })
@@ -263,7 +353,7 @@ describe("resetComplaints", () => {
 
   it("restores the seed so a demo can be rerun", () => {
     const target = openOne()
-    decide(target.id, { id: "issueFine", label: "Issue Fine", note: "n/a" })
+    decide(target.id, { id: "guilty", label: "Driver Guilty", note: "n/a" })
     expect(complaintById(target.id).stage).toBe("Closed")
 
     resetComplaints()

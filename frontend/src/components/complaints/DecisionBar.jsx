@@ -7,6 +7,7 @@ import { ActionButton } from "./ActionButton"
 import { DecisionConfirm } from "./DecisionConfirm"
 import { decide } from "@/app/complaintStore"
 import { OFFICERS } from "@/data/personas"
+import { useT } from "@/i18n"
 
 /**
  * SMC's "Take Action" card, carrying the complaints actions from the POC
@@ -22,62 +23,95 @@ import { OFFICERS } from "@/data/personas"
  */
 const ACTIONS = [
   {
-    id: "escalate",
-    label: "Escalate to Supervisor",
+    id: "missingInfo",
+    label: "Essential Information Missing",
     icon: ArrowUp,
     tone: "danger",
-    roles: ["officer"],
-    note: "Referred upward — the officer was not sure",
+    roles: ["officer", "supervisor"],
+    note: "Returned to Customer Happiness for the missing detail",
+    approval: true,
+  },
+  {
+    id: "faceToFace",
+    label: "Face-to-Face Investigation Needed",
+    icon: Undo2,
+    tone: "danger",
+    roles: ["officer", "supervisor"],
+    note: "Required for termination, or where no recording is available",
+    approval: true,
+  },
+  {
+    id: "invalid",
+    label: "Invalid Complaint — No Event Exists",
+    icon: CircleX,
+    tone: "neutral",
+    roles: ["officer", "supervisor"],
+    note: "Available evidence does not support the reported event",
+  },
+  {
+    id: "notGuilty",
+    label: "Valid Complaint — Driver Not Guilty",
+    icon: CircleCheck,
+    tone: "success",
+    roles: ["officer", "supervisor"],
+    note: "The event exists, but the driver is not at fault",
+  },
+  {
+    id: "guilty",
+    label: "Valid Complaint — Driver Guilty",
+    icon: Banknote,
+    tone: "primary",
+    roles: ["officer", "supervisor"],
+    note: "Verified finding recorded; fine transferred to Stafteesh",
+    penalties: true,
+  },
+  {
+    id: "matchFound",
+    label: "Potential Match Found",
+    icon: CircleCheck,
+    tone: "success",
+    roles: ["officer", "supervisor"],
+    note: "The item was traced and matched to the report",
+    caseTypes: ["Lost Item"],
   },
   {
     id: "reassign",
     label: "Reassign to Investigation Officer",
     icon: Undo2,
-    tone: "danger",
+    tone: "neutral",
     roles: ["supervisor"],
     note: "Sent back to an officer for further work",
     officers: true,
-  },
-  {
-    id: "falsePositive",
-    label: "False Positive",
-    icon: CircleX,
-    tone: "neutral",
-    roles: ["officer", "supervisor"],
-    note: "The complaint is not borne out by the evidence",
-  },
-  {
-    id: "noFine",
-    label: "No Fine Required",
-    icon: CircleCheck,
-    tone: "success",
-    roles: ["officer", "supervisor"],
-    note: "Upheld, but not to the threshold for a penalty",
-  },
-  {
-    id: "issueFine",
-    label: "Issue Fine",
-    icon: Banknote,
-    tone: "primary",
-    roles: ["officer", "supervisor"],
-    note: "Fine raised against the driver's licence",
-    penalties: true,
   },
 ]
 
 export function DecisionBar({ complaint, role }) {
   const [pending, setPending] = useState(null)
   const navigate = useNavigate()
+  const t = useT()
   const decision = complaint.decision
 
   if (decision) return <DecisionRecorded decision={decision} />
 
-  const available = ACTIONS.filter((a) => a.roles.includes(role.id))
+  const lostItem = complaint.caseType === "Lost Item"
 
-  const confirm = ({ note, penalty, officer }) => {
+  const available = ACTIONS.filter((a) => {
+    if (!a.roles.includes(role.id)) return false
+    // The completeness gate: a case missing an essential detail cannot be
+    // worked at all, so the only route out is back to Customer Happiness.
+    if (complaint.incomplete) return a.id === "missingInfo"
+    // A lost-item case is traced or it is not — there is no driver fine.
+    if (a.caseTypes) return a.caseTypes.includes(complaint.caseType)
+    if (lostItem && a.id === "guilty") return false
+    return true
+  })
+
+  const confirm = ({ note, penalty, officer, fineSubCategory, suspensionDays }) => {
     decide(complaint.id, pending, {
       note,
       penalty,
+      fineSubCategory,
+      suspensionDays,
       officer: OFFICERS.find((o) => o.id === officer),
       by: `${role.staff.name} · ${role.staff.code}`,
     })
@@ -91,13 +125,13 @@ export function DecisionBar({ complaint, role }) {
 
   return (
     <Card className="p-4">
-      <CardTitle className="mb-3">Take Action</CardTitle>
+      <CardTitle className="mb-3">{t("Take Action")}</CardTitle>
 
       <div className="grid gap-2.5">
         {available.map((a) => (
           <ActionButton key={a.id} tone={a.tone} onClick={() => setPending(a)}>
             <a.icon />
-            {a.label}
+            {t(a.label)}
           </ActionButton>
         ))}
       </div>

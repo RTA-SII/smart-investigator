@@ -9,7 +9,16 @@ import { ROLES } from "./personas"
 describe("the complaint dataset", () => {
   it("is deterministic across imports", () => {
     expect(COMPLAINTS[0].id).toBe(COMPLAINTS[0].id)
-    expect(COMPLAINTS).toHaveLength(96)
+    // RTA's 9 reference cases, plus the generated backdrop.
+    expect(COMPLAINTS).toHaveLength(9 + 96)
+  })
+
+  it("carries RTA's own cases alongside the generated ones", () => {
+    const rta = COMPLAINTS.filter((c) => c.source === "RTA")
+    expect(rta).toHaveLength(9)
+    expect(rta.every((c) => c.id.startsWith("RTA-"))).toBe(true)
+    // Their value is the filled investigation form, in RTA's own words.
+    expect(rta.every((c) => c.form?.investigatorStatement)).toBe(true)
   })
 
   it("has unique ids", () => {
@@ -50,7 +59,9 @@ describe("the complaint dataset", () => {
   })
 
   it("states the complaint type inside its own narrative", () => {
-    for (const c of COMPLAINTS) {
+    // Generated rows only: RTA's cases carry the caller's actual words, which
+    // name the conduct without naming the reason code.
+    for (const c of COMPLAINTS.filter((c) => c.source !== "RTA")) {
       expect(c.narrative).toContain(c.type)
     }
   })

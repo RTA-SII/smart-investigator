@@ -1,6 +1,13 @@
 import { useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { ChevronLeft, ClipboardList, IdCard, LayoutList, MessageSquare } from "lucide-react"
+import {
+  ChevronLeft,
+  ClipboardCheck,
+  ClipboardList,
+  IdCard,
+  LayoutList,
+  MessageSquare,
+} from "lucide-react"
 import { Tabs } from "@/components/ui/Tabs"
 import { Card } from "@/components/ui/Card"
 import { Badge } from "@/components/ui/Badge"
@@ -12,6 +19,9 @@ import { PartiesPanel } from "@/components/complaints/panels/PartiesPanel"
 import { EvidencePanel } from "@/components/complaints/panels/EvidencePanel"
 import { AuditPanel } from "@/components/complaints/panels/AuditPanel"
 import { CommentsPanel } from "@/components/complaints/panels/CommentsPanel"
+import { InvestigationForm } from "@/components/complaints/panels/InvestigationForm"
+import { CaseExceptions } from "@/components/complaints/CaseExceptions"
+import { useT } from "@/i18n"
 import { AssignmentPanel } from "@/components/complaints/AssignmentPanel"
 import { useComplaints } from "@/app/complaintStore"
 import { roleById } from "@/data/personas"
@@ -23,6 +33,7 @@ import { useSession } from "@/app/session"
 const TABS = (comments) => [
   { value: "details", label: "Details", icon: <LayoutList /> },
   { value: "parties", label: "Complainant & Driver", icon: <IdCard /> },
+  { value: "form", label: "Investigation Form", icon: <ClipboardCheck /> },
   { value: "comments", label: "Comments", icon: <MessageSquare />, count: comments },
   { value: "audit", label: "Audit Log", icon: <ClipboardList /> },
 ]
@@ -33,6 +44,7 @@ export function ComplaintDetail() {
   const navigate = useNavigate()
   const session = useSession()
   const role = roleById(session.roleId)
+  const t = useT()
   const [tab, setTab] = useState("details")
 
   const complaint = useComplaints().find((c) => c.id === id)
@@ -76,8 +88,15 @@ export function ComplaintDetail() {
         </span>
       </div>
 
+      {/* Anything blocking a normal finding is said before the tabs, not
+          buried inside one. */}
+      <CaseExceptions complaint={complaint} role={role} />
+
       <Tabs
-        tabs={TABS(complaint.comments?.length ?? 0)}
+        tabs={TABS(complaint.comments?.length ?? 0).map((tab) => ({
+          ...tab,
+          label: t(tab.label),
+        }))}
         value={tab}
         onChange={setTab}
         className="mb-5"
@@ -93,6 +112,7 @@ export function ComplaintDetail() {
             </>
           )}
           {tab === "parties" && <PartiesPanel complaint={complaint} />}
+          {tab === "form" && <InvestigationForm complaint={complaint} />}
           {tab === "comments" && <CommentsPanel complaint={complaint} role={role} />}
           {tab === "audit" && <AuditPanel complaint={complaint} />}
         </div>

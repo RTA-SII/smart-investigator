@@ -1,4 +1,10 @@
-/** The complaint vocabulary itself — statuses, priorities, categories, modes. */
+/**
+ * The complaint vocabulary itself — findings, priorities, reasons, modes.
+ *
+ * Where RTA's own export carries a bilingual value, the Arabic below is
+ * theirs rather than ours: the findings and the action taken come straight
+ * from `Status Reason` and the investigation forms.
+ */
 export const domain = {
   Critical: "حرجة",
   High: "عالية",
@@ -9,16 +15,29 @@ export const domain = {
   Assigned: "مُسندة",
   "Under Investigation": "قيد التحقيق",
   Escalated: "مُصعّدة",
+  Returned: "مُعادة",
   Closed: "مغلقة",
 
   Confirmed: "مؤكدة",
   Inconclusive: "غير حاسمة",
   "False Positive": "بلاغ خاطئ",
-  "Fine Issued": "صدرت مخالفة",
-  "No Fine Required": "لا مخالفة مطلوبة",
-  "Driver Suspended": "إيقاف السائق",
-  "Vehicle Suspended": "إيقاف المركبة",
-  "Permit Suspended": "تعليق التصريح",
+
+  // RTA's verified findings — their wording.
+  "Valid Complaint - Guilty": "شكوى صحيحة - مذنب",
+  "Valid Complaint - Not Guilty": "شكوى صحيحة - غير مذنب",
+  "Invalid Complaint - No Event Exists": "شكوى غير صحيحة - لا توجد واقعة",
+  "Essential Information Missing": "معلومات أساسية ناقصة",
+  "Potential Match Found": "تمت المطابقة بمعثور",
+
+  // RTA's Action Taken.
+  "Verbal Warning": "تنبيه شفهي",
+  "Driver Fine": "مخالفة على السائق",
+  "Fine & Suspension": "مخالفة وإيقاف",
+  "Not guilty": "غير مذنب",
+  Termination: "إنهاء الخدمة",
+
+  Complaint: "شكوى",
+  "Lost Item": "مفقودات",
 
   Taxi: "تاكسي",
   "Public Bus": "حافلة عامة",
@@ -28,26 +47,41 @@ export const domain = {
   Marine: "النقل البحري",
   "All Modes": "كل الوسائل",
 
-  "Driver Behaviour": "سلوك السائق",
-  Fare: "الأجرة",
-  Service: "الخدمة",
+  // Reason groupings.
+  "Driver Conduct": "سلوك السائق",
+  Driving: "القيادة",
+  "Fare and Service": "الأجرة والخدمة",
 
-  "Call Centre": "مركز الاتصال",
-  "Dubai Now App": "تطبيق دبي الآن",
-  "RTA Website": "موقع الهيئة",
-  Email: "البريد الإلكتروني",
+  // RTA's Origin.
+  Chatbot: "المحادثة الآلية",
+  Phone: "الهاتف",
+  "E-mail": "البريد الإلكتروني",
   "Walk-in": "حضور شخصي",
 
-  "Reckless Driving": "قيادة متهورة",
-  "Rude Behaviour": "سلوك غير لائق",
-  "Mobile Phone While Driving": "استخدام الهاتف أثناء القيادة",
-  "Unsafe Lane Change": "تغيير مسار غير آمن",
-  "Smoking in Vehicle": "التدخين داخل المركبة",
-  "Aggressive Braking": "فرملة عنيفة",
-  Overcharging: "تقاضي أجرة زائدة",
-  "Meter Not Used": "عدم تشغيل العداد",
-  "Refused Card Payment": "رفض الدفع بالبطاقة",
-  "Refused Trip": "رفض الرحلة",
-  "Route Deviation": "الانحراف عن المسار",
-  "Vehicle Uncleanliness": "عدم نظافة المركبة",
+  // RTA's Reason / Purpose.
+  "Verbal Assault": "اعتداء لفظي",
+  "Physical Assault": "اعتداء جسدي",
+  "Verbal Harassment": "تحرش لفظي",
+  "Physical Harassment": "تحرش جسدي",
+  "Staff Conduct": "سلوك الموظف",
+  "Reckless driving": "قيادة متهورة",
+  "Extending Route To Increase Fare": "إطالة المسار لزيادة الأجرة",
+  "Refusal of Pick-up": "رفض إقلال الراكب",
+  "Lost Item Investigation": "التحقيق في المفقودات",
+
+  // Operators (Touchpoint).
+  Kabi: "كابي",
+  "Arabia Taxi": "أرابيا تاكسي",
+  DTC: "مؤسسة تاكسي دبي",
+  "National Taxi": "ناشيونال تاكسي",
+
+  // Satisfaction.
+  Satisfied: "راضٍ",
+  Neutral: "محايد",
+  "Very Dissatisfied": "غير راضٍ إطلاقاً",
+  "Called Customer - No Reply": "تم الاتصال بالعميل ولم يرد",
+
+  // Investigation method.
+  "Via Camera": "عبر الكاميرا",
+  "Face to Face & Camera": "مقابلة شخصية والكاميرا",
 }

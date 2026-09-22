@@ -1,35 +1,51 @@
-/** Vocabulary the complaints dataset is drawn from. Kept apart from the
- *  generator so the filter bars can enumerate options without importing rows. */
+/**
+ * Vocabulary the complaints dataset is drawn from.
+ *
+ * Every value here comes from RTA's own CRM export (`Book2.xlsx`) and the
+ * Investigation Office workflow deck — not invented. Where a value carries
+ * RTA's bilingual wording, the Arabic is theirs, so `i18n/ar/domain.js` reads
+ * from here rather than translating.
+ *
+ * Kept apart from the generator so the filter bars can enumerate options
+ * without importing rows.
+ */
 
-export const CHANNELS = [
-  "Call Centre",
-  "Dubai Now App",
-  "RTA Website",
-  "Email",
-  "Walk-in",
-]
+/** RTA's `Origin`, plus the one channel the Investigation Office logs itself. */
+export const CHANNELS = ["Chatbot", "Phone", "E-mail", "Walk-in"]
 
 /**
- * The channels an officer types in by hand. Everything else arrives from CRM,
- * so these are what the Manual Complaints page is built from — the generator
- * and that page both read this, so they cannot drift apart.
+ * Cases that were typed in at the centre rather than arriving from CRM.
+ * `Walk-in` is our own addition — RTA's export has no manual origin, because
+ * Customer Happiness raises every case upstream.
  */
-export const MANUAL_CHANNELS = ["Walk-in", "Call Centre"]
+export const MANUAL_CHANNELS = ["Walk-in"]
 
 export const isManual = (c) =>
   c.source === "Manual" || MANUAL_CHANNELS.includes(c.channel)
 
+/** RTA's two case types. */
+export const CASE_TYPES = ["Complaint", "Lost Item"]
+
+/**
+ * RTA's `Reason / Purpose` values, grouped for the reports.
+ *
+ * The nine values are RTA's; the grouping is ours, because their export has
+ * no category dimension and the reports need one.
+ */
 export const CATEGORIES = {
-  "Driver Behaviour": [
-    "Reckless Driving",
-    "Rude Behaviour",
-    "Mobile Phone While Driving",
-    "Unsafe Lane Change",
-    "Smoking in Vehicle",
-    "Aggressive Braking",
+  "Driver Conduct": [
+    "Verbal Assault",
+    "Physical Assault",
+    "Verbal Harassment",
+    "Physical Harassment",
+    "Staff Conduct",
   ],
-  Fare: ["Overcharging", "Meter Not Used", "Refused Card Payment"],
-  Service: ["Refused Trip", "Route Deviation", "Vehicle Uncleanliness"],
+  Driving: ["Reckless driving"],
+  "Fare and Service": [
+    "Extending Route To Increase Fare",
+    "Refusal of Pick-up",
+  ],
+  "Lost Item": ["Lost Item Investigation"],
 }
 
 export const COMPLAINT_TYPES = Object.values(CATEGORIES).flat()
@@ -41,18 +57,63 @@ export const STAGES = [
   "Assigned",
   "Under Investigation",
   "Escalated",
+  "Returned",
   "Closed",
 ]
 
-/** The four outcomes a decision can close a complaint with (POC scope §8).
- *  A fine may additionally carry a PENALTY. */
-export const OUTCOMES = ["False Positive", "No Fine Required", "Fine Issued"]
+/**
+ * The verified findings a case closes with (deck slide 3).
+ *
+ * The first three and the last come from RTA's `Status Reason`; *Invalid
+ * complaint* and *Essential information missing* come from the decision model
+ * in the deck, which the export happens not to contain an example of.
+ */
+export const OUTCOMES = [
+  "Valid Complaint - Guilty",
+  "Valid Complaint - Not Guilty",
+  "Invalid Complaint - No Event Exists",
+  "Essential Information Missing",
+  "Potential Match Found",
+]
 
-/** Suspensions that can accompany a fine — driver, vehicle, or permit. */
+/** RTA's bilingual wording for the findings their export does carry. */
+export const OUTCOME_AR = {
+  "Valid Complaint - Guilty": "شكوى صحيحة - مذنب",
+  "Valid Complaint - Not Guilty": "شكوى صحيحة - غير مذنب",
+  "Potential Match Found": "تمت المطابقة بمعثور",
+}
+
+/** RTA's `Action Taken` — what actually happens to the driver. */
 export const PENALTIES = [
-  "Driver Suspended",
-  "Vehicle Suspended",
-  "Permit Suspended",
+  "Verbal Warning",
+  "Driver Fine",
+  "Fine & Suspension",
+  "Not guilty",
+  "Termination",
+]
+
+/** Fines are raised against the driver, or against the operating company
+ *  when the vehicle had no recording available (deck slide 4). */
+export const FINE_CATEGORIES = ["Driver Fines", "Company Fines"]
+
+/** RTA's fine codes, verbatim from the investigation forms. */
+export const FINE_SUB_CATEGORIES = [
+  "1-49 Driving recklessly, or in a way that is dangerous to the public.",
+  "1-52 Misbehave or abuse the customers, public, colleagues or the RTA employees.",
+  "1-53 Non-compliance with the issued instructions or circulars by RTA.",
+  "1-60 Defaming, cursing, or threatening Authority employees, customers, or Co-workers, or the public.",
+]
+
+export const INVESTIGATION_METHODS = ["Via Camera", "Face to Face & Camera"]
+
+/** Suspension is recorded in days. RTA's forms show 3, 5 and 10. */
+export const SUSPENSION_PERIODS = [3, 5, 10]
+
+export const SATISFACTION = [
+  "Satisfied",
+  "Neutral",
+  "Very Dissatisfied",
+  "Called Customer - No Reply",
 ]
 
 /** The six modes RTA tracks complaints across (POC scope §1). */
@@ -65,13 +126,23 @@ export const MODES = [
   "Marine",
 ]
 
-export const COMPANIES = [
-  "Dubai Taxi",
-  "National Taxi",
-  "Hala",
-  "Cars Taxi",
-  "Arabia Taxi",
-]
+/**
+ * Which operational system validates a trip, by transport activity.
+ *
+ * Named in the workflow deck and confirmed on the process map, where the
+ * investigator branches on activity before checking anything.
+ */
+export const ACTIVITY_SYSTEM = {
+  Taxi: "D8 / TEAMS",
+  "Limousine and e-Hail": "RMS",
+  "Hourly Rental": "RMS",
+  "Public Bus": "TTSS",
+  "School Bus": "TTSS",
+  Marine: "TTSS",
+}
+
+/** RTA's `Touchpoint` — the operator the vehicle belongs to. */
+export const COMPANIES = ["Kabi", "Arabia Taxi", "DTC", "National Taxi"]
 
 export const LOCATIONS = [
   "Al Barsha",
@@ -86,16 +157,19 @@ export const LOCATIONS = [
   "Dubai Silicon Oasis",
 ]
 
-/** The eight signals the AI cross-validates a complaint against. */
+/**
+ * What cross-validation actually checks, named after the systems the deck
+ * and process map call out rather than the generic signals we invented.
+ */
 export const AI_CHECKS = [
-  "GPS track matches trip",
-  "Speed profile corroborates",
-  "Harsh-braking events found",
-  "In-cab camera supports claim",
-  "Phone-use detection fired",
-  "Trip record matches receipt",
-  "Driver identity confirmed",
+  "CRM case categorized and complete",
+  "Trip found in operational records",
+  "Vehicle and side number match",
+  "Driver on shift at the reported time",
   "Permit valid at time of trip",
+  "Lynx recording retrieved",
+  "Recording covers the reported window",
+  "Footage supports the allegation",
 ]
 
 /** Tone assignments, so a badge's colour is decided in one place. */
@@ -111,19 +185,24 @@ export const STAGE_TONE = {
   Assigned: "info",
   "Under Investigation": "high",
   Escalated: "critical",
+  Returned: "medium",
   Closed: "low",
 }
 
 export const OUTCOME_TONE = {
-  "Fine Issued": "critical",
-  "No Fine Required": "neutral",
-  "False Positive": "low",
+  "Valid Complaint - Guilty": "critical",
+  "Valid Complaint - Not Guilty": "neutral",
+  "Invalid Complaint - No Event Exists": "low",
+  "Essential Information Missing": "high",
+  "Potential Match Found": "info",
 }
 
 export const PENALTY_TONE = {
-  "Driver Suspended": "critical",
-  "Vehicle Suspended": "critical",
-  "Permit Suspended": "critical",
+  "Verbal Warning": "medium",
+  "Driver Fine": "critical",
+  "Fine & Suspension": "critical",
+  "Not guilty": "low",
+  Termination: "critical",
 }
 
 export const VERDICT_TONE = {
@@ -132,18 +211,15 @@ export const VERDICT_TONE = {
   Inconclusive: "high",
 }
 
-/** One statement per complaint type, so the wording matches what was reported. */
+/** One statement per reason, so the wording matches what was reported. */
 export const STATEMENTS = {
-  "Reckless Driving": "drove well above the posted limit and weaved between lanes",
-  "Rude Behaviour": "answered rudely and raised his voice when asked to slow down",
-  "Mobile Phone While Driving": "held a mobile phone to his ear while the vehicle was moving",
-  "Unsafe Lane Change": "changed lanes without indicating, cutting in front of another vehicle",
-  "Smoking in Vehicle": "smoked inside the cabin for most of the trip despite being asked to stop",
-  "Aggressive Braking": "braked hard several times without cause, throwing passengers forward",
-  Overcharging: "charged well above the metered amount at the end of the trip",
-  "Meter Not Used": "refused to start the meter and quoted a flat fare instead",
-  "Refused Card Payment": "declined card payment and insisted on cash",
-  "Refused Trip": "refused the trip on learning the destination",
-  "Route Deviation": "took a noticeably longer route than necessary",
-  "Vehicle Uncleanliness": "operated the vehicle in a visibly unclean condition",
+  "Verbal Assault": "shouted at and swore at the passenger without provocation",
+  "Physical Assault": "got out of the vehicle and struck the complainant",
+  "Verbal Harassment": "asked personal questions and would not let the subject drop",
+  "Physical Harassment": "behaved towards the passenger in a way that made them unsafe",
+  "Staff Conduct": "made offensive gestures at another road user after overtaking",
+  "Reckless driving": "tailgated at speed and gave no safe stopping distance",
+  "Extending Route To Increase Fare": "took a longer route than necessary and charged the higher fare",
+  "Refusal of Pick-up": "refused the trip and blocked other taxis from taking it",
+  "Lost Item Investigation": "was asked to return an item left in the vehicle",
 }

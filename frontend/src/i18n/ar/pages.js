@@ -101,4 +101,63 @@ export const pages = {
   All: "الكل",
   Nothing: "لا شيء",
   "Nothing assigned to you in this scope": "لا توجد شكاوى مُسندة إليك ضمن هذا النطاق",
+
+  // The Take Action card — RTA's verified findings.
+  "Take Action": "اتخاذ إجراء",
+  "Essential Information Missing": "معلومات أساسية ناقصة",
+  "Face-to-Face Investigation Needed": "مطلوب تحقيق وجهاً لوجه",
+  "Invalid Complaint — No Event Exists": "شكوى غير صحيحة — لا توجد واقعة",
+  "Valid Complaint — Driver Not Guilty": "شكوى صحيحة — السائق غير مذنب",
+  "Valid Complaint — Driver Guilty": "شكوى صحيحة — السائق مذنب",
+  "Potential Match Found": "تمت المطابقة بمعثور",
+  "Reassign to Investigation Officer": "إعادة إسناد إلى ضابط التحقيق",
+
+  // The investigation workspace tabs.
+  Details: "التفاصيل",
+  "Complainant & Driver": "المتعامل والسائق",
+  Comments: "الملاحظات",
+  "Audit Log": "سجل التدقيق",
+
+  // The Investigation Form.
+  "Investigation Form": "استمارة التحقيق",
+  Statements: "الإفادات",
+  "Customer's Statement": "إفادة المتعامل",
+  "Driver's Statement": "إفادة السائق",
+  "Investigator's Statement": "إفادة المحقق",
+  "Driver ID": "رقم السائق",
+  Nationality: "الجنسية",
+  "Plate Number": "رقم اللوحة",
+  "Side Number": "الرقم الجانبي",
+  "Case Location": "موقع الواقعة",
+  "Reason / Purpose": "السبب / الغرض",
+  "Action Taken": "الإجراء المتخذ",
+  "Suspension Period": "مدة الإيقاف",
+  "Fine Category": "فئة المخالفة",
+  "Fine Sub Category": "بند المخالفة",
+  days: "أيام",
+  "Not recorded yet": "لم تُسجَّل بعد",
+  "The outcome is recorded here once a finding is taken.":
+    "يُسجَّل الإجراء هنا بمجرد اتخاذ القرار.",
+  "No investigation form has been opened for this case yet.":
+    "لم تُفتح استمارة تحقيق لهذه الحالة بعد.",
+
+  // Case types and filters.
+  "Case Type": "نوع الحالة",
+  "Verified Finding": "القرار المُثبت",
+
+  // The completeness gate and the recording exception.
+  "Essential information missing": "معلومات أساسية ناقصة",
+  "This case cannot be investigated until Customer Happiness supplies the missing detail — a date, a time, a side or plate number, and a description are all required. Returning it needs supervisor approval.":
+    "لا يمكن التحقيق في هذه الحالة حتى توفّر إدارة سعادة المتعاملين البيانات الناقصة — التاريخ والوقت والرقم الجانبي أو رقم اللوحة والوصف كلها مطلوبة. وتحتاج الإعادة إلى موافقة المشرف.",
+  "Required vehicle recording is unavailable": "تسجيل المركبة المطلوب غير متوفر",
+  "Lynx holds no footage for this vehicle. Raising the exception suspends the vehicle, blocks the driver permit, and issues a fine to the operating company, which is notified by email. The investigation then continues face to face.":
+    "لا يوجد تسجيل لهذه المركبة في نظام لينكس. رفع الاستثناء يوقف المركبة ويحجب تصريح السائق ويصدر مخالفة على الشركة المشغّلة مع إخطارها بالبريد الإلكتروني، ثم يستكمل التحقيق وجهاً لوجه.",
+  "Raise recording exception": "رفع استثناء التسجيل",
+  "Vehicle suspended — recording exception raised": "المركبة موقوفة — تم رفع استثناء التسجيل",
+  "Vehicle suspended, driver permit blocked, and a company fine issued and notified by email. Release the suspension once the recording issue is resolved.":
+    "تم إيقاف المركبة وحجب تصريح السائق وإصدار مخالفة على الشركة وإخطارها بالبريد الإلكتروني. ارفع الإيقاف بمجرد معالجة مشكلة التسجيل.",
+  "Vehicle suspension released": "تم رفع إيقاف المركبة",
+  "The recording issue was resolved and the vehicle and permit are back in service.":
+    "تمت معالجة مشكلة التسجيل وعادت المركبة والتصريح إلى الخدمة.",
+  "Release after resolution": "رفع الإيقاف بعد المعالجة",
 }
