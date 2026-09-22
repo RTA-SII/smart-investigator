@@ -1,0 +1,159 @@
+import { useState } from "react"
+import { X } from "lucide-react"
+import { Button } from "@/components/ui/Button"
+import { Choice } from "@/components/ui/Form"
+import { OFFICERS, officerLoads } from "@/data/personas"
+import { useComplaints } from "@/app/complaintStore"
+
+/** Suspensions that can ride alongside a fine (POC scope §8). */
+const PENALTY_CHOICES = [
+  { value: "", label: "Fine only" },
+  { value: "Driver Suspended", label: "Suspend driver" },
+  { value: "Vehicle Suspended", label: "Suspend vehicle" },
+  { value: "Permit Suspended", label: "Suspend permit" },
+]
+
+/**
+ * The slide-in confirmation behind every action — the house pattern in place
+ * of a modal. It carries the driver record the decision is written against,
+ * so nobody rules on a name alone.
+ */
+export function DecisionConfirm({ action, complaint, role, onCancel, onConfirm }) {
+  const complaints = useComplaints()
+  const [penalty, setPenalty] = useState("")
+  // An unassigned complaint still has to submit somebody: without this the
+  // select shows the first officer while the value stays empty, and
+  // confirming would reassign it to nobody.
+  const [officer, setOfficer] = useState(
+    complaint.assignee?.id ?? OFFICERS[0].id,
+  )
+  const [note, setNote] = useState(
+    `${action.note}. Cross-validation returned ${complaint.ai.verdict} at ${complaint.ai.confidence}% confidence.`,
+  )
+
+  const destructive = action.tone === "primary" || action.tone === "danger"
+
+  return (
+    <>
+      <div className="fixed inset-0 z-40 bg-[rgb(0_0_0/0.25)]" onClick={onCancel} />
+      <aside className="fixed inset-y-0 end-0 z-50 flex w-[420px] max-w-[92vw] flex-col bg-[var(--popover)] shadow-[0_20px_60px_rgb(0_0_0/0.2)]">
+        <div className="flex items-start justify-between gap-3 border-b border-[var(--border)] px-5 py-4">
+          <div className="min-w-0">
+            <p className="truncate text-base font-bold">{action.label}</p>
+            <p className="ltr-value truncate font-mono text-[11px] text-[var(--muted-foreground)]">
+              {complaint.id}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onCancel}
+            aria-label="Cancel"
+            className="grid size-8 shrink-0 place-items-center rounded-lg transition-colors hover:bg-[var(--accent)]"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+          <p className="text-sm leading-relaxed">{action.note}.</p>
+
+          <dl className="mt-5 space-y-3">
+            <Row label="Driver" value={complaint.driver.name} />
+            <Row label="Licence" value={complaint.driver.licence} mono />
+            <Row label="Permit" value={complaint.driver.permit} mono />
+            <Row label="Prior complaints" value={complaint.driver.priorComplaints} />
+            <Row
+              label="AI verdict"
+              value={`${complaint.ai.verdict} · ${complaint.ai.confidence}%`}
+            />
+          </dl>
+
+          {action.id === "issueFine" && (
+            <p className="mt-5 rounded-xl border-[1px] border-[rgb(228_26_20/0.25)] bg-[rgb(228_26_20/0.08)] px-4 py-3 text-sm text-[var(--destructive)]">
+              This action is written to the driver's enforcement record and
+              notified to the operator.
+            </p>
+          )}
+
+          {action.penalties && (
+            <Block
+              label="Additional penalty"
+              hint="A fine may be issued on its own, or alongside a suspension."
+            >
+              <Choice options={PENALTY_CHOICES} value={penalty} onChange={setPenalty} />
+            </Block>
+          )}
+
+          {action.officers && (
+            <Block
+              label="Investigation officer"
+              hint="Leave it with the same officer to return the complaint, or pick another to reassign it."
+            >
+              <select
+                aria-label="Investigation officer"
+                value={officer}
+                onChange={(e) => setOfficer(e.target.value)}
+                className="w-full cursor-pointer rounded-xl border-[1px] border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm focus:ring-2 focus:ring-[var(--ring)] focus:outline-none"
+              >
+                {officerLoads(complaints).map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.name} · {o.load} open
+                  </option>
+                ))}
+              </select>
+            </Block>
+          )}
+
+          <label className="mt-5 block">
+            <span className="mb-1.5 block text-[10px] font-semibold tracking-[0.5px] text-[var(--muted-foreground)] uppercase">
+              Officer note
+            </span>
+            <textarea
+              rows={4}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              className="w-full rounded-xl border-[1px] border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm focus:ring-2 focus:ring-[var(--ring)] focus:outline-none"
+            />
+          </label>
+        </div>
+
+        <div className="flex items-center justify-end gap-2 border-t border-[var(--border)] px-5 py-4">
+          <Button variant="ghost" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button
+            variant={destructive ? "destructive" : "primary"}
+            onClick={() => onConfirm({ note, penalty, officer })}
+          >
+            Confirm as {role.title}
+          </Button>
+        </div>
+      </aside>
+    </>
+  )
+}
+
+function Block({ label, hint, children }) {
+  return (
+    <div className="mt-5">
+      <span className="mb-1.5 block text-[10px] font-semibold tracking-[0.5px] text-[var(--muted-foreground)] uppercase">
+        {label}
+      </span>
+      {children}
+      <span className="mt-1.5 block text-[11px] text-[var(--muted-foreground)]">
+        {hint}
+      </span>
+    </div>
+  )
+}
+
+function Row({ label, value, mono }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <dt className="shrink-0 text-sm text-[var(--muted-foreground)]">{label}</dt>
+      <dd className={`min-w-0 truncate text-sm font-semibold ${mono ? "font-mono" : ""}`}>
+        {value}
+      </dd>
+    </div>
+  )
+}

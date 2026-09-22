@@ -1,21 +1,26 @@
 import { createHashRouter } from "react-router-dom"
-import App from "./App.jsx"
-import Home from "../pages/Home.jsx"
-import Journey from "../pages/Journey.jsx"
-import Architecture from "../pages/Architecture.jsx"
-import VibeCode from "../pages/VibeCode.jsx"
-import PmLog from "../pages/PmLog.jsx"
+import { App } from "@/app/App"
+import { RolePicker } from "@/pages/RolePicker"
+import { Dashboard } from "@/pages/Dashboard"
+import { Reports } from "@/pages/Reports"
+import { Complaints } from "@/pages/Complaints"
+import { ManualComplaints } from "@/pages/ManualComplaints"
+import { NewManualComplaint } from "@/pages/NewManualComplaint"
+import { ComplaintDetail } from "@/pages/ComplaintDetail"
+import { MyQueue } from "@/pages/MyQueue"
 
 export const router = createHashRouter([
+  { path: "/", element: <RolePicker /> },
   {
-    path: "/",
     element: <App />,
     children: [
-      { index: true, element: <Home /> },
-      { path: "journey", element: <Journey /> },
-      { path: "architecture", element: <Architecture /> },
-      { path: "vibe-code", element: <VibeCode /> },
-      { path: "pm-log", element: <PmLog /> },
+      { path: "/dashboard", element: <Dashboard /> },
+      { path: "/reports", element: <Reports /> },
+      { path: "/complaints", element: <Complaints /> },
+      { path: "/complaints/:id", element: <ComplaintDetail /> },
+      { path: "/manual-complaints", element: <ManualComplaints /> },
+      { path: "/manual-complaints/new", element: <NewManualComplaint /> },
+      { path: "/my-queue", element: <MyQueue /> },
     ],
   },
 ])

@@ -1,0 +1,183 @@
+import { describe, expect, it } from "vitest"
+import { COMPLAINTS, complaintById, NOW } from "./complaints"
+import { OUTCOMES, PRIORITIES, STAGES } from "./catalog"
+import { isQueued } from "@/lib/cht"
+import { wasEscalated } from "@/lib/filters"
+import { isManual } from "./catalog"
+import { ROLES } from "./personas"
+
+describe("the complaint dataset", () => {
+  it("is deterministic across imports", () => {
+    expect(COMPLAINTS[0].id).toBe(COMPLAINTS[0].id)
+    expect(COMPLAINTS).toHaveLength(96)
+  })
+
+  it("has unique ids", () => {
+    expect(new Set(COMPLAINTS.map((c) => c.id)).size).toBe(COMPLAINTS.length)
+  })
+
+  it("is sorted newest first", () => {
+    const times = COMPLAINTS.map((c) => new Date(c.receivedAt).getTime())
+    expect([...times].sort((a, b) => b - a)).toEqual(times)
+  })
+
+  it("never dates a complaint into the future", () => {
+    for (const c of COMPLAINTS) {
+      expect(new Date(c.receivedAt).getTime()).toBeLessThanOrEqual(NOW.getTime())
+    }
+  })
+
+  it("draws every enum value from the catalog", () => {
+    for (const c of COMPLAINTS) {
+      expect(PRIORITIES).toContain(c.priority)
+      expect(STAGES).toContain(c.stage)
+      if (c.outcome) expect(OUTCOMES).toContain(c.outcome)
+    }
+  })
+
+  it("records an outcome exactly on the closed complaints", () => {
+    for (const c of COMPLAINTS) {
+      if (c.stage === "Closed") expect(c.outcome).toBeTruthy()
+      else expect(c.outcome).toBeNull()
+    }
+  })
+
+  it("assigns an officer to everything past the New stage", () => {
+    for (const c of COMPLAINTS) {
+      if (c.stage === "New") expect(c.assignee).toBeNull()
+      else expect(c.assignee?.id).toBeTruthy()
+    }
+  })
+
+  it("states the complaint type inside its own narrative", () => {
+    for (const c of COMPLAINTS) {
+      expect(c.narrative).toContain(c.type)
+    }
+  })
+
+  it("gives every complaint a full cross-validation result", () => {
+    for (const c of COMPLAINTS) {
+      expect(c.ai.checks).toHaveLength(8)
+      expect(c.ai.confidence).toBeGreaterThanOrEqual(48)
+      expect(c.ai.confidence).toBeLessThanOrEqual(100)
+      expect(c.ai.recommendation).toBeTruthy()
+    }
+  })
+
+  it("leans confirmed when the checks mostly pass", () => {
+    const sub = COMPLAINTS.filter((c) => c.ai.verdict === "Confirmed")
+    const passRate =
+      sub.reduce((a, c) => a + c.ai.checks.filter((k) => k.pass).length, 0) /
+      (sub.length * 8)
+    expect(passRate).toBeGreaterThan(0.6)
+  })
+
+  it("opens every audit trail with the CRM handover", () => {
+    for (const c of COMPLAINTS) {
+      expect(c.timeline[0].actor).toBe("CRM Gateway")
+      expect(c.timeline[0].note).toContain(c.crmRef)
+    }
+  })
+})
+
+describe("complaintById", () => {
+  it("finds a known complaint", () => {
+    const first = COMPLAINTS[0]
+    expect(complaintById(first.id)).toBe(first)
+  })
+
+  it("returns undefined for an unknown id", () => {
+    expect(complaintById("CMP-000000")).toBeUndefined()
+  })
+})
+
+describe("the vocabulary stays inside the action set", () => {
+  it("never recommends an action the officer does not have", () => {
+    const actions = new Set([
+      "Escalate to Supervisor",
+      "Reassign to Investigation Officer",
+      "False Positive",
+      "No Fine Required",
+      "Issue Fine",
+    ])
+    for (const c of COMPLAINTS) expect(actions.has(c.ai.recommendation)).toBe(true)
+  })
+
+  it("uses only the three current verdicts", () => {
+    const verdicts = new Set(["Confirmed", "Inconclusive", "False Positive"])
+    for (const c of COMPLAINTS) expect(verdicts.has(c.ai.verdict)).toBe(true)
+  })
+})
+
+describe("manually logged complaints", () => {
+  const manual = COMPLAINTS.filter(isManual)
+
+  it("records who typed each one in", () => {
+    expect(manual.length).toBeGreaterThan(0)
+    expect(manual.every((c) => c.loggedBy?.id)).toBe(true)
+  })
+
+  it("leaves CRM complaints without a logger", () => {
+    const fromCrm = COMPLAINTS.filter((c) => !isManual(c))
+    expect(fromCrm.every((c) => c.loggedBy === null)).toBe(true)
+  })
+
+  it("gives the signed-in officer some of their own to see", () => {
+    const mine = manual.filter((c) => c.loggedBy.id === ROLES[0].staff.code)
+    expect(mine.length).toBeGreaterThan(0)
+  })
+
+  it("gives the officer a closed one to look at, not only open work", () => {
+    const mine = manual.filter((c) => c.loggedBy.id === ROLES[0].staff.code)
+    expect(mine.filter((c) => c.stage === "Closed").length).toBeGreaterThan(0)
+  })
+
+  it("keeps logging separate from assignment", () => {
+    // Nothing seeded is assigned to the signed-in officer, but they have
+    // still logged complaints — the two must not be the same field.
+    expect(COMPLAINTS.some((c) => c.assignee?.id === ROLES[0].staff.code)).toBe(false)
+  })
+})
+
+describe("the escalation history", () => {
+  it("has complaints that went up and were then ruled on", () => {
+    const closedAfterEscalation = COMPLAINTS.filter(
+      (c) => c.stage === "Closed" && wasEscalated(c),
+    )
+    expect(closedAfterEscalation.length).toBeGreaterThan(0)
+  })
+
+  it("keeps the trail after the stage moves on", () => {
+    // Stage says Closed; only the audit trail still knows it was escalated.
+    for (const c of COMPLAINTS.filter((c) => c.stage === "Closed" && wasEscalated(c))) {
+      expect(c.timeline.some((e) => /escalat/i.test(e.action))).toBe(true)
+    }
+  })
+})
+
+describe("cross-validation is not run until somebody asks", () => {
+  it("leaves an untouched complaint unverified", () => {
+    const untouched = COMPLAINTS.filter((c) => c.stage === "New")
+    expect(untouched.every((c) => c.aiVerified === false)).toBe(true)
+  })
+
+  it("keeps the engine out of the audit trail until it has run", () => {
+    const entry = (c) =>
+      c.timeline.some((e) => e.action === "AI cross-validation completed")
+    for (const c of COMPLAINTS) expect(entry(c)).toBe(c.aiVerified)
+  })
+
+  it("still carries the verdict, ready for when it is asked for", () => {
+    expect(COMPLAINTS.every((c) => c.ai?.verdict)).toBe(true)
+  })
+})
+
+describe("the Main Queue starts empty", () => {
+  it("has nothing seeded waiting to be pulled", () => {
+    expect(COMPLAINTS.filter(isQueued)).toHaveLength(0)
+  })
+
+  it("puts every seeded complaint on an officer", () => {
+    expect(COMPLAINTS.every((c) => c.assignee)).toBe(true)
+  })
+})

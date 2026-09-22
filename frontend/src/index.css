@@ -1,0 +1,565 @@
+@import "tailwindcss";
+
+/* ──────────────────────────────────────────────────────────────────────────
+   RTA typeface — the four weights the SMC portal self-hosts.
+   Note the non-standard weight mapping: SMC maps "Regular" to 500, not 400.
+   ────────────────────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: RTA;
+  src: url(/fonts/RTA-Light.ttf) format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: RTA;
+  src: url(/fonts/RTA-Regular.ttf) format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: RTA;
+  src: url(/fonts/RTA-Bold.ttf) format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: RTA;
+  src: url(/fonts/RTA-Black.ttf) format("truetype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   SMC tokens — lifted verbatim from rta-smc.ducontapps.com
+   ────────────────────────────────────────────────────────────────────────── */
+:root {
+  --sk-shine: #171c8f1a;
+  --sk-base: #0000000f;
+  --sk-chart: #0000000a;
+  --shadow-card: 0 8px 32px #0000001a, 0 1px 0 #ffffff8c inset;
+
+  --background: #f3f3f4;
+  --foreground: #1a1a1a;
+  --card: #ffffff38;
+  --card-foreground: #1a1a1a;
+  /* The fill SMC's glass classes actually paint — note this is NOT --card,
+     which the portal defines but does not use for its surfaces. */
+  --surface: rgb(255 255 255 / 0.36);
+  --popover: #fff;
+  --popover-foreground: #1a1a1a;
+  --primary: #171c8f;
+  --primary-foreground: #fff;
+  --secondary: #e8e8f4;
+  --secondary-foreground: #1a1a1a;
+  --muted: #eee;
+  --muted-foreground: #575757;
+  --accent: #e8e8f4;
+  --accent-foreground: #1a1a1a;
+  --destructive: #e41a14;
+  --border: #0000001a;
+  --input: #eee;
+  --ring: #171c8f;
+
+  --chart-1: #171c8f;
+  --chart-2: #2e339a;
+  --chart-3: #e41a14;
+  --chart-4: #4fae5e;
+  --chart-5: #ff0;
+
+  --radius: 0.5rem;
+
+  --sidebar: #ffffff38;
+  --sidebar-foreground: #1a1a1a;
+  --sidebar-primary: #171c8f;
+  --sidebar-primary-foreground: #fff;
+  --sidebar-accent: #e8e8f48c;
+  --sidebar-accent-foreground: #1a1a1a;
+  --sidebar-border: #ffffff7a;
+  --sidebar-ring: #171c8f;
+
+  /* Semantic tones — the palette SMC drives its badges and status chips from.
+     Every chip is the same formula: text = tone, bg = tone/15%, border = tone/25%. */
+  --tone-high: #f59e0b;
+  --tone-critical: #e41a14;
+  --tone-medium: #eab308;
+  --tone-low: #4fae5e;
+  --tone-info: #0ea5e9;
+  --tone-neutral: #575757;
+
+  /* The Take Action rail buttons, measured off SMC's alert detail page.
+     The fill is the page ground — NOT a tone tint. Only the text and the
+     hairline carry the tone, which is why the list reads as one block. */
+  --action-fill: #f3f3f4;
+  --action-fill-hover: #eee;
+  --action-danger: #f87171;
+  --action-danger-edge: rgb(239 68 68 / 0.4);
+  --action-neutral-edge: rgb(148 163 184 / 0.3);
+  --action-success: #009a44;
+  --action-success-edge: rgb(0 154 68 / 0.3);
+}
+
+.dark {
+  --sk-shine: #8b8dc724;
+  --sk-base: #ffffff0f;
+  --sk-chart: #ffffff08;
+  --shadow-card: 0 10px 36px #00000059, 0 1px 0 #ffffff14 inset;
+
+  --background: #070b12;
+  --foreground: #e2e8f0;
+  --card: #121820;
+  --card-foreground: #e2e8f0;
+  --surface: #121820;
+  --popover: #1a2332;
+  --popover-foreground: #e2e8f0;
+  --primary: #8b8dc7;
+  --primary-foreground: #fff;
+  --secondary: #1a2332;
+  --secondary-foreground: #e2e8f0;
+  --muted: #1a2332;
+  --muted-foreground: #8b9bb4;
+  --accent: #1a2332;
+  --accent-foreground: #e2e8f0;
+  --destructive: #e41a14;
+  --border: #ffffff1a;
+  --input: #1a2332;
+  --ring: #8b8dc7;
+
+  --chart-1: #171c8f;
+  --chart-2: #2e339a;
+  --chart-3: #e41a14;
+  --chart-4: #4fae5e;
+  --chart-5: #ff0;
+
+  --sidebar: #0e141c;
+  --sidebar-foreground: #e2e8f0;
+  --sidebar-primary: #8b8dc7;
+  --sidebar-primary-foreground: #fff;
+  --sidebar-accent: #1a23328c;
+  --sidebar-accent-foreground: #e2e8f0;
+  --sidebar-border: #ffffff1a;
+  --sidebar-ring: #8b8dc7;
+
+  /* The page ground is near-black here, so the action fill becomes a raised
+     white wash instead, and the green lifts to stay legible on it. */
+  --action-fill: #ffffff0f;
+  --action-fill-hover: #ffffff1a;
+  --action-success: #4fae5e;
+}
+
+@theme inline {
+  --font-sans: RTA, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* SMC's radius scale, measured off the portal. Note it is NOT stock
+     Tailwind's — rounded-xl is 11.2px here, not 12px, and 2xl is 14.4px. */
+  --radius-sm: 4.8px;
+  --radius-md: 6.4px;
+  --radius-lg: 8px;
+  --radius-xl: 11.2px;
+  --radius-2xl: 14.4px;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: RTA, system-ui, sans-serif;
+    font-weight: 500;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* SMC leans on 500 as its body weight; headings step straight to 700. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-weight: 700;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Surfaces.
+   SMC has two, and they are not the same. Shell surfaces (top bar, sidebar)
+   sit on a 1px hairline border; cards use a 1px ring instead and a tighter
+   radius. Both share the same translucent white fill. Despite the `glass-`
+   naming in the portal there is no backdrop blur anywhere — verified against
+   computed styles — so this is flat translucent white over the page ground.
+   ────────────────────────────────────────────────────────────────────────── */
+@utility glass-surface {
+  background: var(--surface);
+  border: 1px solid rgb(255 255 255 / 0.62);
+  border-radius: 16px;
+  box-shadow:
+    0 10px 28px rgb(0 0 0 / 0.07),
+    0 1px 0 0 #fff inset,
+    1px 0 0 0 rgb(255 255 255 / 0.55) inset,
+    0 -1px 0 0 rgb(255 255 255 / 0.28) inset;
+}
+
+@utility glass-card {
+  background: var(--surface);
+  border-radius: 14.4px;
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.55),
+    0 12px 20px -12px rgb(0 0 0 / 0.2),
+    0 1px 0 0 #fff inset;
+}
+
+.dark .glass-surface,
+.dark .glass-card {
+  border-color: var(--border);
+  box-shadow: var(--shadow-card);
+}
+
+/* Dashboard tiles.
+   A brighter fill than a plain card (white/.58 against white/.36) and their
+   own edge. On hover they lift 6px, scale a hair, and the ring turns
+   primary-tinted with a soft glow behind it — SMC's stroke highlight.
+   Transform leads at 0.4s, the shadow and edge trail at 0.65s, which is what
+   makes the tile feel like it settles rather than snaps. */
+@utility dash-tile {
+  background: rgb(255 255 255 / 0.58);
+  border: 1px solid rgb(255 255 255 / 0.72);
+  border-radius: 11.2px;
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.55),
+    0 12px 20px -12px rgb(0 0 0 / 0.2),
+    0 1px 0 0 #fff inset;
+  transition:
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dash-tile:hover {
+  transform: translateY(-6px) scale(1.01);
+  background: rgb(255 255 255 / 0.7);
+  border-color: color-mix(in oklab, var(--primary) 42%, #fff);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--primary) 55%, #fff),
+    0 0 10px color-mix(in oklab, var(--primary) 45%, transparent),
+    0 20px 28px -12px
+      color-mix(
+        in oklab,
+        color-mix(in oklab, var(--primary) 71%, #000) 40%,
+        transparent
+      ),
+    0 1px 0 0 #fff inset;
+}
+
+.dark .dash-tile {
+  background: var(--card);
+  border-color: var(--border);
+  box-shadow: var(--shadow-card);
+}
+
+.dark .dash-tile:hover {
+  transform: translateY(-6px) scale(1.01);
+  border-color: color-mix(in oklab, var(--primary) 60%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--primary) 50%, transparent),
+    0 0 12px color-mix(in oklab, var(--primary) 35%, transparent),
+    0 20px 28px -12px rgb(0 0 0 / 0.55);
+}
+
+/* Toolbar — the pill rail that holds tab groups and segmented controls. */
+@utility glass-toolbar {
+  background: var(--surface);
+  border: 1px solid rgb(255 255 255 / 0.72);
+  border-radius: 11.2px;
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.4),
+    0 8px 18px -10px rgb(0 0 0 / 0.12),
+    0 1px 0 0 #fff inset,
+    1px 0 0 0 rgb(255 255 255 / 0.5) inset,
+    0 -1px 0 0 rgb(255 255 255 / 0.22) inset;
+}
+
+/* Chip — the brightest surface in the system, used for unselected filters. */
+@utility glass-chip {
+  background: rgb(255 255 255 / 0.78);
+  border: 1px solid rgb(255 255 255 / 0.92);
+  box-shadow:
+    0 1px 0 0 #fff inset,
+    1px 0 0 0 rgb(255 255 255 / 0.7) inset,
+    0 -1px 0 0 rgb(255 255 255 / 0.35) inset;
+}
+
+/* Filter control — the dropdown trigger on every filter bar. */
+@utility filter-control {
+  background: rgb(255 255 255 / 0.42);
+  border-radius: 8px;
+  box-shadow:
+    0 1px 0 0 rgb(255 255 255 / 0.85) inset,
+    1px 0 0 0 rgb(255 255 255 / 0.45) inset,
+    0 -1px 0 0 rgb(255 255 255 / 0.18) inset;
+  transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filter-control:hover {
+  background: rgb(255 255 255 / 0.62);
+}
+
+.dark .glass-toolbar,
+.dark .glass-chip,
+.dark .filter-control {
+  background: rgb(255 255 255 / 0.05);
+  border-color: var(--border);
+  box-shadow: none;
+}
+
+.dark .filter-control:hover {
+  background: rgb(255 255 255 / 0.1);
+}
+
+/* Page ground — a static sheet of four soft white highlights over a faint
+   diagonal ramp. Lifted from SMC's `.glass-scene`; it does not animate. */
+.app-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(1300px 900px at 4% 6%, rgb(255 255 255 / 0.82), transparent 58%),
+    radial-gradient(1100px 820px at 94% 2%, rgb(255 255 255 / 0.58), transparent 52%),
+    radial-gradient(980px 760px at 82% 92%, rgb(255 255 255 / 0.42), transparent 55%),
+    radial-gradient(900px 700px at 12% 88%, rgb(255 255 255 / 0.5), transparent 52%),
+    linear-gradient(165deg, #f2f2f3, #f4f4f5 42%, #f5f5f6 68%, #f3f3f4);
+}
+
+.dark .app-scene {
+  background:
+    radial-gradient(1300px 900px at 4% 6%, rgb(139 141 199 / 0.08), transparent 58%),
+    radial-gradient(1100px 820px at 94% 2%, rgb(139 141 199 / 0.05), transparent 52%),
+    linear-gradient(165deg, #070b12, #0a1018 60%, #070b12);
+}
+
+/* ── Animations, verbatim from the SMC bundle ─────────────────────────────── */
+@keyframes glass-orb-drift {
+  0%,
+  to {
+    transform: translate(0) scale(1);
+  }
+  50% {
+    transform: translate(5%, 4%) scale(1.1);
+  }
+}
+
+@keyframes glass-glint-drift-tile {
+  0% {
+    opacity: 0.5;
+    transform: translate(-8%, -18%) scale(1) rotate(-10deg);
+  }
+  32% {
+    opacity: 0.82;
+    transform: translate(58%, 22%) scale(1.2, 0.8) rotate(12deg);
+  }
+  64% {
+    opacity: 0.55;
+    transform: translate(18%, 48%) scale(0.86, 1.14) rotate(-6deg);
+  }
+  to {
+    opacity: 0.5;
+    transform: translate(-8%, -18%) scale(1) rotate(-10deg);
+  }
+}
+
+@keyframes reports-chart-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes row-flash {
+  0% {
+    background-color: #171c8f2e;
+  }
+  60% {
+    background-color: #171c8f12;
+  }
+  to {
+    background-color: #0000;
+  }
+}
+
+@keyframes card-pop {
+  0% {
+    opacity: 0;
+    background-color: #171c8f24;
+    transform: scale(0.97);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.01);
+  }
+  to {
+    opacity: 1;
+    background-color: #0000;
+    transform: scale(1);
+  }
+}
+
+@keyframes sk-shimmer {
+  0% {
+    transform: translate(-100%);
+  }
+  to {
+    transform: translate(100%);
+  }
+}
+
+.card-pop {
+  animation: card-pop 0.5s ease-out both;
+}
+
+/* Toasts cannot use `card-pop`: it ends on `background-color: #0000`, and
+   with `both` that final keyframe sticks — which left the arrival toast
+   permanently see-through over the page. This only moves and fades. */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.toast-in {
+  animation: toast-in 0.28s ease-out both;
+}
+
+.row-flash {
+  animation: row-flash 1.6s ease-out both;
+}
+
+.chart-rise {
+  animation: reports-chart-rise 0.45s ease-out both;
+}
+
+/* KPI tiles carry a slow specular glint that crawls across the surface. */
+.tile-glint {
+  position: relative;
+  overflow: hidden;
+}
+
+/* The glint is decoration: it must sit under the tile's content, not over it. */
+.tile-glint > * {
+  position: relative;
+  z-index: 1;
+}
+
+.tile-glint::after {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  z-index: 0;
+  background: radial-gradient(
+    closest-side,
+    rgb(255 255 255 / 0.75),
+    transparent 70%
+  );
+  animation: glass-glint-drift-tile 18s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.dark .tile-glint::after {
+  background: radial-gradient(
+    closest-side,
+    rgb(139 141 199 / 0.14),
+    transparent 70%
+  );
+}
+
+/* Latin-script values (timestamps, IDs, plates) keep their own direction so
+   the bidi algorithm does not reorder them inside Arabic text. */
+.ltr-value {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* ── Skeletons ────────────────────────────────────────────────────────────── */
+.sk-tone-text {
+  border-radius: calc(var(--radius) * 0.8);
+  background: var(--sk-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.sk-tone-chart {
+  border-radius: var(--radius);
+  background: var(--sk-chart);
+  position: relative;
+  overflow: hidden;
+}
+
+.sk-shimmer::after {
+  content: "";
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    transparent 40%,
+    var(--sk-shine) 50%,
+    transparent 60%,
+    transparent 100%
+  );
+  animation: 1.75s ease-in-out infinite sk-shimmer;
+  position: absolute;
+  inset: 0;
+  transform: translate(-100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-pop,
+  .toast-in,
+  .row-flash,
+  .chart-rise,
+  .tile-glint::after,
+  .sk-shimmer::after {
+    animation: none;
+  }
+}

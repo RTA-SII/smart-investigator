@@ -1,0 +1,53 @@
+/** The complaint vocabulary itself — statuses, priorities, categories, modes. */
+export const domain = {
+  Critical: "حرجة",
+  High: "عالية",
+  Medium: "متوسطة",
+  Low: "منخفضة",
+
+  New: "جديدة",
+  Assigned: "مُسندة",
+  "Under Investigation": "قيد التحقيق",
+  Escalated: "مُصعّدة",
+  Closed: "مغلقة",
+
+  Confirmed: "مؤكدة",
+  Inconclusive: "غير حاسمة",
+  "False Positive": "بلاغ خاطئ",
+  "Fine Issued": "صدرت مخالفة",
+  "No Fine Required": "لا مخالفة مطلوبة",
+  "Driver Suspended": "إيقاف السائق",
+  "Vehicle Suspended": "إيقاف المركبة",
+  "Permit Suspended": "تعليق التصريح",
+
+  Taxi: "تاكسي",
+  "Public Bus": "حافلة عامة",
+  "School Bus": "حافلة مدرسية",
+  "Limousine and e-Hail": "ليموزين والحجز الذكي",
+  "Hourly Rental": "التأجير بالساعة",
+  Marine: "النقل البحري",
+  "All Modes": "كل الوسائل",
+
+  "Driver Behaviour": "سلوك السائق",
+  Fare: "الأجرة",
+  Service: "الخدمة",
+
+  "Call Centre": "مركز الاتصال",
+  "Dubai Now App": "تطبيق دبي الآن",
+  "RTA Website": "موقع الهيئة",
+  Email: "البريد الإلكتروني",
+  "Walk-in": "حضور شخصي",
+
+  "Reckless Driving": "قيادة متهورة",
+  "Rude Behaviour": "سلوك غير لائق",
+  "Mobile Phone While Driving": "استخدام الهاتف أثناء القيادة",
+  "Unsafe Lane Change": "تغيير مسار غير آمن",
+  "Smoking in Vehicle": "التدخين داخل المركبة",
+  "Aggressive Braking": "فرملة عنيفة",
+  Overcharging: "تقاضي أجرة زائدة",
+  "Meter Not Used": "عدم تشغيل العداد",
+  "Refused Card Payment": "رفض الدفع بالبطاقة",
+  "Refused Trip": "رفض الرحلة",
+  "Route Deviation": "الانحراف عن المسار",
+  "Vehicle Uncleanliness": "عدم نظافة المركبة",
+}
