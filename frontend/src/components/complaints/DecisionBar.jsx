@@ -17,8 +17,9 @@ import { useT } from "@/i18n"
  * Required, Issue Fine. The first row is what separates them: an officer who
  * is not sure escalates, a supervisor hands the complaint back to an officer.
  *
- * Order, tone and icon follow the portal's own list: the referral row first
- * in red, the two no-penalty outcomes in grey then green, and the single
+ * Order, tone and icon follow the portal's own list: the two routes that
+ * take the case away from the officer first in red, then the grey
+ * face-to-face step, the no-penalty outcome in green, and the single
  * enforcement action last as the solid primary button.
  */
 const ACTIONS = [
@@ -32,21 +33,21 @@ const ACTIONS = [
     approval: true,
   },
   {
-    id: "faceToFace",
-    label: "Face-to-Face Investigation Needed",
-    icon: Undo2,
-    tone: "danger",
-    roles: ["officer", "supervisor"],
-    note: "Required for termination, or where no recording is available",
-    approval: true,
-  },
-  {
     id: "escalate",
     label: "Escalate to Supervisor",
     icon: CircleX,
     tone: "danger",
     roles: ["officer"],
     note: "Referred upward — the officer was not sure",
+    approval: true,
+  },
+  {
+    id: "faceToFace",
+    label: "Face-to-Face Investigation Needed",
+    icon: Undo2,
+    tone: "neutral",
+    roles: ["officer", "supervisor"],
+    note: "Required for termination, or where no recording is available",
     approval: true,
   },
   {

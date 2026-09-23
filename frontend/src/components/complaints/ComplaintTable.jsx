@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom"
-import { Bus, Car, Crown, School } from "lucide-react"
 import { Table, TD, TH, THead, TR } from "@/components/ui/Table"
 import { Badge } from "@/components/ui/Badge"
 import { SlaClock } from "@/components/complaints/SlaClock"
@@ -9,8 +8,7 @@ import { useT } from "@/i18n"
 import { usePaged } from "@/lib/paging"
 import { Pagination } from "@/components/ui/Pagination"
 import { AssignPicker } from "@/components/complaints/AssignPicker"
-
-const MODE_ICON = { Taxi: Car, "Public Bus": Bus, "School Bus": School, Limousine: Crown }
+import { modeIcon } from "@/components/complaints/modeIcons"
 
 /** `assignable` adds SMC's Assigned To column — the supervisor's to use. */
 export function ComplaintTable({ rows, emptyLabel, assignable = false }) {
@@ -44,7 +42,7 @@ export function ComplaintTable({ rows, emptyLabel, assignable = false }) {
       </THead>
       <tbody>
         {paged.page.map((c) => {
-          const Icon = MODE_ICON[c.mode] ?? Car
+          const Icon = modeIcon(c.mode)
           return (
             <TR key={c.id} onClick={() => navigate(`/complaints/${c.id}`)}>
               <TD>

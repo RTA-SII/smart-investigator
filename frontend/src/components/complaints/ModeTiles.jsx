@@ -1,27 +1,9 @@
 import { useMemo } from "react"
-import { Bus, Car, Crown, School, Ship, Wrench } from "lucide-react"
 import { Card } from "@/components/ui/Card"
 import { MODES } from "@/data/catalog"
+import { MODE_TONE, modeIcon } from "./modeIcons"
 import { useT } from "@/i18n"
 import { cn } from "@/lib/cn"
-
-const MODE_ICON = {
-  Taxi: Car,
-  "Public Bus": Bus,
-  "School Bus": School,
-  "Limousine and e-Hail": Crown,
-  "Hourly Rental": Wrench,
-  Marine: Ship,
-}
-
-const MODE_TONE = {
-  Taxi: "var(--tone-high)",
-  "Public Bus": "var(--tone-info)",
-  "School Bus": "#ff8200",
-  "Limousine and e-Hail": "#9b59b6",
-  "Hourly Rental": "#009a44",
-  Marine: "#0ea5e9",
-}
 
 /**
  * The transport-mode summary strip, as SMC puts it above My Alerts.
@@ -55,7 +37,7 @@ export function ModeTiles({ rows, value = [], onChange }) {
   return (
     <div className="mb-4 grid grid-cols-2 items-stretch gap-3 lg:grid-cols-3 xl:grid-cols-6">
       {tiles.map((tile) => {
-        const Icon = MODE_ICON[tile.mode] ?? Car
+        const Icon = modeIcon(tile.mode)
         const on = value.includes(tile.mode)
         return (
           <Card

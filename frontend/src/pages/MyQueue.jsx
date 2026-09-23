@@ -4,7 +4,6 @@ import { Card } from "@/components/ui/Card"
 import { Segmented } from "@/components/ui/Segmented"
 import { ComplaintTable } from "@/components/complaints/ComplaintTable"
 import { FilterBar } from "@/components/complaints/FilterBar"
-import { MyProductivity } from "@/components/complaints/MyProductivity"
 import { ModeTiles } from "@/components/complaints/ModeTiles"
 import { useComplaints } from "@/app/complaintStore"
 import { roleById } from "@/data/personas"
@@ -53,10 +52,6 @@ export function MyQueue() {
           />
         }
       />
-      <div className="mb-5">
-        <MyProductivity role={role} bare />
-      </div>
-
       {/* Counts are of everything assigned to the officer, so selecting a
           mode narrows the list without blanking the other tiles. */}
       <ModeTiles

@@ -42,7 +42,7 @@ export const domain = {
   "Public Bus": "حافلة عامة",
   "School Bus": "حافلة مدرسية",
   "Limousine and e-Hail": "ليموزين والحجز الذكي",
-  "Hourly Rental": "التأجير بالساعة",
+  Rental: "التأجير",
   Marine: "النقل البحري",
   "All Modes": "كل الوسائل",
 

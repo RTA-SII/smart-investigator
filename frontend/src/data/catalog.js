@@ -115,13 +115,18 @@ export const SATISFACTION = [
   "Called Customer - No Reply",
 ]
 
-/** The six modes RTA tracks complaints across (POC scope §1). */
+/**
+ * The six modes RTA tracks complaints across (POC scope §1).
+ *
+ * `Rental` is RTA's *Hourly Rental* activity under the name the portal shows
+ * — the billing unit is not something an investigator filters on.
+ */
 export const MODES = [
   "Taxi",
   "Public Bus",
   "School Bus",
   "Limousine and e-Hail",
-  "Hourly Rental",
+  "Rental",
   "Marine",
 ]
 
@@ -134,7 +139,7 @@ export const MODES = [
 export const ACTIVITY_SYSTEM = {
   Taxi: "D8 / TEAMS",
   "Limousine and e-Hail": "RMS",
-  "Hourly Rental": "RMS",
+  Rental: "RMS",
   "Public Bus": "TTSS",
   "School Bus": "TTSS",
   Marine: "TTSS",

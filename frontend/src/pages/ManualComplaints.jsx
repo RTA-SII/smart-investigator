@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { ArrowRight, Bus, Car, CirclePlus, Crown, Download, FileClock, School } from "lucide-react"
+import { ArrowRight, CirclePlus, Download, FileClock } from "lucide-react"
 import { PageHeader } from "@/components/shell/PageHeader"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
@@ -18,8 +18,7 @@ import { initials, shortStamp } from "@/lib/format"
 import { useT } from "@/i18n"
 import { usePaged } from "@/lib/paging"
 import { Pagination } from "@/components/ui/Pagination"
-
-const MODE_ICON = { Taxi: Car, "Public Bus": Bus, "School Bus": School, Limousine: Crown }
+import { modeIcon } from "@/components/complaints/modeIcons"
 
 /**
  * Complaints logged inside SMC rather than received from CRM.
@@ -103,7 +102,7 @@ export function ManualComplaints() {
             </THead>
             <tbody>
               {paged.page.map((c) => {
-                const Icon = MODE_ICON[c.mode] ?? Car
+                const Icon = modeIcon(c.mode)
                 return (
                   <TR key={c.id}>
                     <TD>

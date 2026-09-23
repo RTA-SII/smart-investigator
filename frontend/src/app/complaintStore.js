@@ -22,9 +22,9 @@ import { COMPLAINTS, NOW } from "@/data/complaints"
  * was renamed to `Confirmed`. The version is in the key, and older keys are
  * swept on load, so that cannot happen silently again.
  */
-const DATA_VERSION = 2
+const DATA_VERSION = 3
 const KEY = `smc-complaints-data.v${DATA_VERSION}`
-const LEGACY_KEYS = ["smc-complaints-data"]
+const LEGACY_KEYS = ["smc-complaints-data", "smc-complaints-data.v2"]
 
 /**
  * What each decision does to the complaint — the four actions per role set

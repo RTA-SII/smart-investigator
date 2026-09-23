@@ -2,15 +2,11 @@ import { useMemo, useState } from "react"
 import {
   Activity,
   BadgeCheck,
-  Bus,
-  Car,
   ChartNoAxesCombined,
   CircleCheck,
-  Crown,
   Download,
   Gauge,
   LayoutGrid,
-  School,
   ShieldAlert,
   TrendingUp,
   TriangleAlert,
@@ -28,17 +24,24 @@ import { CategoryReport } from "@/components/complaints/reports/CategoryReport"
 import { ChannelReport } from "@/components/complaints/reports/ChannelReport"
 import { CompanyReport } from "@/components/complaints/reports/CompanyReport"
 import { scopeRows } from "@/data/reports"
+import { MODES as TRANSPORT_MODES } from "@/data/catalog"
+import { modeIcon } from "@/components/complaints/modeIcons"
 import { wasEscalated } from "@/lib/filters"
 import { useComplaints } from "@/app/complaintStore"
 import { num } from "@/lib/format"
 import { useT } from "@/i18n"
 
+/**
+ * Built from the catalog rather than listed by hand — the hand-written list
+ * filtered on `Limousine`, which no complaint carries, and left rental and
+ * marine off the row entirely.
+ */
 const MODES = [
   { value: "all", label: "All Modes", icon: <LayoutGrid /> },
-  { value: "Taxi", label: "Taxi", icon: <Car /> },
-  { value: "Public Bus", label: "Public Bus", icon: <Bus /> },
-  { value: "School Bus", label: "School Bus", icon: <School /> },
-  { value: "Limousine", label: "Limousine", icon: <Crown /> },
+  ...TRANSPORT_MODES.map((mode) => {
+    const Icon = modeIcon(mode)
+    return { value: mode, label: mode, icon: <Icon /> }
+  }),
 ]
 
 /**

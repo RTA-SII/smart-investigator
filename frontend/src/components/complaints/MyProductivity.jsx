@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+import { useNavigate } from "react-router-dom"
 import {
   CircleCheck,
   Clock,
@@ -15,6 +16,7 @@ import { useComplaints } from "@/app/complaintStore"
 import { initials } from "@/lib/format"
 import { wasEscalated } from "@/lib/filters"
 import { useT } from "@/i18n"
+import { cn } from "@/lib/cn"
 
 /**
  * The officer's own numbers — SMC's "My Productivity" strip.
@@ -23,8 +25,9 @@ import { useT } from "@/i18n"
  * hold, what they have finished, and how long they take. It is derived from
  * the live store, so closing a complaint moves it while you watch.
  */
-export function MyProductivity({ role, bare = false }) {
+export function MyProductivity({ role }) {
   const complaints = useComplaints()
+  const navigate = useNavigate()
   const t = useT()
   const code = role.staff.code
 
@@ -51,6 +54,7 @@ export function MyProductivity({ role, bare = false }) {
       avg,
       escalated: mine.filter(wasEscalated).length,
       unactioned: open.length,
+      openIds: open.map((c) => c.id),
     }
   }, [complaints, code])
 
@@ -108,18 +112,16 @@ export function MyProductivity({ role, bare = false }) {
       tone: "var(--tone-critical)",
       icon: TriangleAlert,
       hint: t("Open complaints on your name — the ones a clock is running on."),
+      // The point of this tile is to be acted on. One outstanding complaint
+      // opens straight onto it; more than one goes to the list holding them.
+      to:
+        stats.unactioned === 1
+          ? `/complaints/${stats.openIds[0]}`
+          : stats.unactioned
+            ? "/my-queue"
+            : null,
     },
   ]
-
-  const grid = (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
-      {tiles.map((tile) => (
-        <Tile key={tile.label} {...tile} label={t(tile.label)} />
-      ))}
-    </div>
-  )
-
-  if (bare) return grid
 
   return (
     <Card className="mb-5 p-5">
@@ -140,16 +142,44 @@ export function MyProductivity({ role, bare = false }) {
           <SlidersHorizontal className="size-4" />
         </span>
       </div>
-      {grid}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+        {tiles.map((tile) => (
+          <Tile
+            key={tile.label}
+            {...tile}
+            label={t(tile.label)}
+            onOpen={tile.to ? () => navigate(tile.to) : null}
+          />
+        ))}
+      </div>
     </Card>
   )
 }
 
 const pct = (part, whole) => (whole ? Math.round((part / whole) * 100) : 0)
 
-function Tile({ label, value, caption, meter, tone, icon: Icon, hint }) {
+function Tile({ label, value, caption, meter, tone, icon: Icon, hint, onOpen }) {
   return (
-    <Card glint surface="dash-tile" className="px-3 py-2.5">
+    <Card
+      glint
+      surface="dash-tile"
+      className={cn(
+        "px-3 py-2.5",
+        onOpen &&
+          "cursor-pointer transition-all duration-150 hover:ring-2 hover:ring-[var(--primary)]",
+      )}
+      {...(onOpen && {
+        role: "button",
+        tabIndex: 0,
+        onClick: onOpen,
+        onKeyDown: (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault()
+            onOpen()
+          }
+        },
+      })}
+    >
       <div className="relative flex items-start justify-between gap-1.5">
         <p className="min-w-0 truncate text-[10px] font-semibold tracking-[0.5px] text-[var(--muted-foreground)] uppercase">
           {label}
