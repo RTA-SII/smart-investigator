@@ -10,6 +10,7 @@ export const pages = {
 
   Total: "الإجمالي",
   Open: "مفتوحة",
+  open: "مفتوحة",
   "SLA Breached": "تجاوز المدة",
   "Avg Handling": "متوسط المعالجة",
 

@@ -53,7 +53,12 @@ export function MyQueue() {
         <MyProductivity role={role} bare />
       </div>
 
-      <FilterBar filters={filters} onChange={setFilters} count={rows.length} />
+      <FilterBar
+        filters={filters}
+        onChange={setFilters}
+        count={rows.length}
+        open={rows.filter((c) => c.stage !== "Closed").length}
+      />
 
       <Card className="overflow-hidden">
         <ComplaintTable rows={rows} emptyLabel={t("Nothing assigned to you in this scope")} />

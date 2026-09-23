@@ -55,7 +55,12 @@ export function Complaints() {
         }
       />
 
-      <FilterBar filters={filters} onChange={setFilters} count={rows.length} />
+      <FilterBar
+        filters={filters}
+        onChange={setFilters}
+        count={rows.length}
+        open={rows.filter((c) => c.stage !== "Closed").length}
+      />
 
       {/* SMC reveals its escalation facets only once Stage is Escalated. */}
       {filters.stage.includes("Escalated") && (
