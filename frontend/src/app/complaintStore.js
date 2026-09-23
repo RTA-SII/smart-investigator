@@ -33,13 +33,14 @@ const LEGACY_KEYS = ["smc-complaints-data"]
  */
 export const TRANSITIONS = {
   guilty: { stage: "Closed", outcome: "Valid Complaint - Guilty" },
-  notGuilty: { stage: "Closed", outcome: "Valid Complaint - Not Guilty" },
-  invalid: { stage: "Closed", outcome: "Invalid Complaint - No Event Exists" },
+  // Covers both of the deck's no-enforcement findings — not at fault, and no
+  // event at all. RTA's own export records either as Not Guilty.
+  noEnforcement: { stage: "Closed", outcome: "Valid Complaint - Not Guilty" },
   matchFound: { stage: "Closed", outcome: "Potential Match Found" },
-  // Neither of these settles the case: one sends it back to Customer
-  // Happiness for the missing detail, the other escalates it for a
-  // face-to-face interview. Both need a supervisor.
+  // None of these settles the case: one sends it back to Customer Happiness
+  // for the missing detail, the others send it up. All need a supervisor.
   missingInfo: { stage: "Returned", outcome: "Essential Information Missing" },
+  escalate: { stage: "Escalated", outcome: null },
   faceToFace: { stage: "Escalated", outcome: null },
   reassign: { stage: "Assigned", outcome: null },
 }

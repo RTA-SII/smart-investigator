@@ -25,7 +25,6 @@ export const domain = {
   // RTA's verified findings — their wording.
   "Valid Complaint - Guilty": "شكوى صحيحة - مذنب",
   "Valid Complaint - Not Guilty": "شكوى صحيحة - غير مذنب",
-  "Invalid Complaint - No Event Exists": "شكوى غير صحيحة - لا توجد واقعة",
   "Essential Information Missing": "معلومات أساسية ناقصة",
   "Potential Match Found": "تمت المطابقة بمعثور",
 

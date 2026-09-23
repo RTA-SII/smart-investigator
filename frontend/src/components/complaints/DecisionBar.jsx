@@ -41,24 +41,28 @@ const ACTIONS = [
     approval: true,
   },
   {
-    id: "invalid",
-    label: "Invalid Complaint — No Event Exists",
+    id: "escalate",
+    label: "Escalate to Supervisor",
     icon: CircleX,
-    tone: "neutral",
-    roles: ["officer", "supervisor"],
-    note: "Available evidence does not support the reported event",
+    tone: "danger",
+    roles: ["officer"],
+    note: "Referred upward — the officer was not sure",
+    approval: true,
   },
   {
-    id: "notGuilty",
-    label: "Valid Complaint — Driver Not Guilty",
+    // One button for both of the deck's no-enforcement findings: the event
+    // happened but the driver is not at fault, and the event did not happen
+    // at all. Either way nothing is raised against the licence.
+    id: "noEnforcement",
+    label: "No Enforcement Needed",
     icon: CircleCheck,
     tone: "success",
     roles: ["officer", "supervisor"],
-    note: "The event exists, but the driver is not at fault",
+    note: "Recorded with no enforcement action against the driver",
   },
   {
     id: "guilty",
-    label: "Valid Complaint — Driver Guilty",
+    label: "Issue Fine",
     icon: Banknote,
     tone: "primary",
     roles: ["officer", "supervisor"],

@@ -46,9 +46,9 @@ export function buildAi(r, type, category) {
   // card.
   const recommendation =
     verdict === "Confirmed"
-      ? `Record the finding as Valid Complaint — Driver Guilty and raise the fine against the driver's licence; telematics and in-cab footage both place the vehicle at the reported time and corroborate the ${type.toLowerCase()}. Consider a suspension alongside the fine where the driver's prior record shows the same conduct.`
+      ? `Issue a fine against the driver's licence and record the finding as Valid Complaint — Driver Guilty; telematics and in-cab footage both place the vehicle at the reported time and corroborate the ${type.toLowerCase()}. Consider a suspension alongside the fine where the driver's prior record shows the same conduct.`
       : verdict === "False Positive"
-        ? `Close as Invalid Complaint — No Event Exists; the recorded behaviour is within normal parameters for the trip and no signal supports the allegation. No fine or penalty should be issued, but keep the record so a repeat report against the same plate can be read as a pattern.`
+        ? `Close with No Enforcement Needed; the recorded behaviour is within normal parameters for the trip and no signal supports the allegation. Nothing should be raised against the driver's licence, but keep the record so a repeat report against the same plate can be read as a pattern.`
         : `Do not rule on this alone — the signals conflict and confidence sits below the threshold at which a penalty is safe. Escalate for a supervisor view, or request the missing footage before deciding; closing it either way on the present evidence risks an unsound finding.`
 
   const summary =

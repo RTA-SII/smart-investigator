@@ -21,7 +21,7 @@ import { ROLES } from "@/data/personas"
 import { chtState, isQueued } from "@/lib/cht"
 
 const OFFICER = ROLES[0]
-const CLOSE = { id: "notGuilty", label: "Driver Not Guilty", note: "n/a" }
+const CLOSE = { id: "noEnforcement", label: "No Enforcement Needed", note: "n/a" }
 
 beforeEach(() => {
   signIn("officer")

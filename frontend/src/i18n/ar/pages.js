@@ -111,9 +111,9 @@ export const pages = {
   "Take Action": "اتخاذ إجراء",
   "Essential Information Missing": "معلومات أساسية ناقصة",
   "Face-to-Face Investigation Needed": "مطلوب تحقيق وجهاً لوجه",
-  "Invalid Complaint — No Event Exists": "شكوى غير صحيحة — لا توجد واقعة",
-  "Valid Complaint — Driver Not Guilty": "شكوى صحيحة — السائق غير مذنب",
-  "Valid Complaint — Driver Guilty": "شكوى صحيحة — السائق مذنب",
+  "Escalate to Supervisor": "التصعيد إلى المشرف",
+  "No Enforcement Needed": "لا يلزم اتخاذ إجراء",
+  "Issue Fine": "إصدار مخالفة",
   "Potential Match Found": "تمت المطابقة بمعثور",
   "Reassign to Investigation Officer": "إعادة إسناد إلى ضابط التحقيق",
 

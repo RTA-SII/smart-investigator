@@ -71,7 +71,6 @@ export const STAGES = [
 export const OUTCOMES = [
   "Valid Complaint - Guilty",
   "Valid Complaint - Not Guilty",
-  "Invalid Complaint - No Event Exists",
   "Essential Information Missing",
   "Potential Match Found",
 ]
@@ -192,7 +191,6 @@ export const STAGE_TONE = {
 export const OUTCOME_TONE = {
   "Valid Complaint - Guilty": "critical",
   "Valid Complaint - Not Guilty": "neutral",
-  "Invalid Complaint - No Event Exists": "low",
   "Essential Information Missing": "high",
   "Potential Match Found": "info",
 }

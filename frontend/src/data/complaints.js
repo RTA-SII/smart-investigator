@@ -157,7 +157,9 @@ function buildOne(i, fresh = false) {
       penalty =
         r() < 0.32 ? "Fine & Suspension" : r() < 0.7 ? "Driver Fine" : "Verbal Warning"
     } else if (ai.verdict === "False Positive") {
-      outcome = "Invalid Complaint - No Event Exists"
+      // No enforcement either way — RTA's export records both the "not at
+      // fault" and the "no event" case as Not Guilty.
+      outcome = "Valid Complaint - Not Guilty"
       penalty = "Not guilty"
     } else {
       outcome = "Valid Complaint - Not Guilty"

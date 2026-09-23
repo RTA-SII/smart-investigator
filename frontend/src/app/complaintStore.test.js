@@ -22,11 +22,11 @@ describe("decide", () => {
 
   it("closes the complaint and records the outcome", () => {
     const before = openOne()
-    decide(before.id, { id: "invalid", label: "Invalid Complaint", note: "n/a" })
+    decide(before.id, { id: "noEnforcement", label: "No Enforcement Needed", note: "n/a" })
 
     const after = complaintById(before.id)
     expect(after.stage).toBe("Closed")
-    expect(after.outcome).toBe("Invalid Complaint - No Event Exists")
+    expect(after.outcome).toBe("Valid Complaint - Not Guilty")
   })
 
   it("carries a suspension alongside a fine, and only alongside a fine", () => {
@@ -41,7 +41,7 @@ describe("decide", () => {
     // records "Not guilty" as the action taken instead.
     resetComplaints()
     const b = openOne()
-    decide(b.id, { id: "notGuilty", label: "Driver Not Guilty", note: "n/a" }, {
+    decide(b.id, { id: "noEnforcement", label: "No Enforcement Needed", note: "n/a" }, {
       penalty: "Fine & Suspension",
     })
     expect(complaintById(b.id).penalty).toBe("Not guilty")
@@ -92,7 +92,7 @@ describe("decide", () => {
     const target = openOne()
     const entries = target.timeline.length
 
-    decide(target.id, { id: "invalid", label: "Invalid Complaint", note: "fallback" }, {
+    decide(target.id, { id: "noEnforcement", label: "No Enforcement Needed", note: "fallback" }, {
       note: "Camera shows the lane change was signalled.",
       by: "Layla Al-Hammadi · SMC-0318",
     })
@@ -107,7 +107,7 @@ describe("decide", () => {
 
   it("falls back to the action's own wording when the note is blank", () => {
     const target = openOne()
-    decide(target.id, { id: "invalid", label: "Invalid Complaint", note: "Evidence does not support" }, {
+    decide(target.id, { id: "noEnforcement", label: "No Enforcement Needed", note: "Evidence does not support" }, {
       note: "   ",
     })
     expect(complaintById(target.id).timeline.at(-1).note).toBe(
@@ -117,7 +117,7 @@ describe("decide", () => {
 
   it("ignores an unknown complaint or action", () => {
     const before = allComplaints()
-    decide("CMP-999999", { id: "invalid", label: "Invalid Complaint" })
+    decide("CMP-999999", { id: "noEnforcement", label: "No Enforcement Needed" })
     decide(openOne().id, { id: "not-a-thing", label: "?" })
     expect(allComplaints()).toBe(before)
   })
