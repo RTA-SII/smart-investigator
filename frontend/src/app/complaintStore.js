@@ -229,59 +229,6 @@ export function verifyAi(id) {
   })
 }
 
-/**
- * The missing-recording exception (deck slide 4).
- *
- * When Lynx has no footage for the vehicle, the consequence is not a failed
- * check — it is a compliance action in its own right, and it fires before
- * anyone rules on the complaint: the vehicle is suspended, the driver's
- * permit blocked, and the operating company fined and notified. The
- * investigation then continues face to face.
- */
-export function applyRecordingException(id, by) {
-  const complaint = complaintById(id)
-  if (!complaint || complaint.exception) return
-
-  replace(id, {
-    exception: {
-      raisedAt: stamp(),
-      vehicleSuspended: true,
-      permitBlocked: true,
-      companyFined: true,
-      released: false,
-    },
-    form: { ...complaint.form, investigationMethod: "Face to Face & Camera" },
-    timeline: [
-      ...complaint.timeline,
-      {
-        at: stamp(),
-        actor: by ?? "Investigation Office",
-        action: "Required recording unavailable",
-        note: `Vehicle suspended and permit blocked · company fine issued to ${complaint.company} and notified by email`,
-      },
-    ],
-  })
-}
-
-/** The vehicle comes back once the recording issue is fixed. */
-export function releaseVehicle(id, by) {
-  const complaint = complaintById(id)
-  if (!complaint?.exception || complaint.exception.released) return
-
-  replace(id, {
-    exception: { ...complaint.exception, released: true, releasedAt: stamp() },
-    timeline: [
-      ...complaint.timeline,
-      {
-        at: stamp(),
-        actor: by ?? "Investigation Office",
-        action: "Vehicle suspension released",
-        note: "Recording issue resolved — vehicle and permit restored",
-      },
-    ],
-  })
-}
-
 /** Next id in the seeded sequence, so filed complaints stay deterministic. */
 function nextId() {
   const highest = rows.reduce((max, c) => {

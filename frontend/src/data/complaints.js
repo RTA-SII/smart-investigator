@@ -211,10 +211,6 @@ function buildOne(i, fresh = false) {
   complaint.incomplete = !fresh && r() < 0.12
   if (complaint.incomplete) complaint.sideNumber = null
 
-  // Lynx does not always hold the footage, and that is its own exception
-  // flow (deck slide 4) rather than simply a failed check.
-  complaint.recordingAvailable = r() > 0.08
-
   complaint.form = buildForm(r, complaint)
 
   // Who typed it in. Unlike the assignee this *can* be the signed-in officer:
@@ -308,7 +304,6 @@ function fromRta(c, i) {
     ai: buildAi(r, c.type, c.category),
     aiVerified: true,
     incomplete: false,
-    recordingAvailable: c.form.investigationMethod !== "Face to Face & Camera",
     evidence: [
       { kind: "image", label: "In-cab camera still", time: c.receivedAt, frame: frameFor("In-cab camera still", i) },
       { kind: "image", label: "Forward road view", time: c.receivedAt, frame: frameFor("Forward road view", i) },

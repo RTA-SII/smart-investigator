@@ -2,11 +2,9 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import {
   allComplaints,
-  applyRecordingException,
   assign,
   complaintById,
   decide,
-  releaseVehicle,
   deliverTo,
   fileComplaint,
   resetComplaints,
@@ -213,66 +211,6 @@ describe("assign", () => {
 
     const after = officerLoads(allComplaints()).find((o) => o.id === officer.id).load
     expect(after).toBe(before + 1)
-  })
-})
-
-describe("the missing-recording exception", () => {
-  beforeEach(() => resetComplaints())
-
-  const noRecording = () =>
-    allComplaints().find((c) => !c.recordingAvailable && !c.exception)
-
-  it("suspends the vehicle, blocks the permit and fines the company", () => {
-    const before = noRecording()
-    expect(before).toBeTruthy()
-
-    applyRecordingException(before.id, "Layla Al-Hammadi · SMC-0318")
-    const after = complaintById(before.id)
-
-    expect(after.exception.vehicleSuspended).toBe(true)
-    expect(after.exception.permitBlocked).toBe(true)
-    expect(after.exception.companyFined).toBe(true)
-    expect(after.exception.released).toBe(false)
-  })
-
-  it("switches the investigation to face to face", () => {
-    const id = noRecording().id
-    applyRecordingException(id)
-    expect(complaintById(id).form.investigationMethod).toBe("Face to Face & Camera")
-  })
-
-  it("logs the compliance action, naming the operator", () => {
-    const before = noRecording()
-    applyRecordingException(before.id)
-
-    const entry = complaintById(before.id).timeline.at(-1)
-    expect(entry.action).toBe("Required recording unavailable")
-    expect(entry.note).toContain(before.company)
-  })
-
-  it("cannot be raised twice", () => {
-    const id = noRecording().id
-    applyRecordingException(id)
-    const trail = complaintById(id).timeline.length
-    applyRecordingException(id)
-    expect(complaintById(id).timeline).toHaveLength(trail)
-  })
-
-  it("releases the vehicle once the recording issue is resolved", () => {
-    const id = noRecording().id
-    applyRecordingException(id)
-    releaseVehicle(id)
-
-    const after = complaintById(id)
-    expect(after.exception.released).toBe(true)
-    expect(after.timeline.at(-1).action).toBe("Vehicle suspension released")
-  })
-
-  it("will not release a vehicle that was never suspended", () => {
-    const clean = allComplaints().find((c) => c.recordingAvailable && !c.exception)
-    const trail = clean.timeline.length
-    releaseVehicle(clean.id)
-    expect(complaintById(clean.id).timeline).toHaveLength(trail)
   })
 })
 

@@ -145,19 +145,8 @@ export const pages = {
   "Case Type": "نوع الحالة",
   "Verified Finding": "القرار المُثبت",
 
-  // The completeness gate and the recording exception.
+  // The completeness gate.
   "Essential information missing": "معلومات أساسية ناقصة",
   "This case cannot be investigated until Customer Happiness supplies the missing detail — a date, a time, a side or plate number, and a description are all required. Returning it needs supervisor approval.":
     "لا يمكن التحقيق في هذه الحالة حتى توفّر إدارة سعادة المتعاملين البيانات الناقصة — التاريخ والوقت والرقم الجانبي أو رقم اللوحة والوصف كلها مطلوبة. وتحتاج الإعادة إلى موافقة المشرف.",
-  "Required vehicle recording is unavailable": "تسجيل المركبة المطلوب غير متوفر",
-  "Lynx holds no footage for this vehicle. Raising the exception suspends the vehicle, blocks the driver permit, and issues a fine to the operating company, which is notified by email. The investigation then continues face to face.":
-    "لا يوجد تسجيل لهذه المركبة في نظام لينكس. رفع الاستثناء يوقف المركبة ويحجب تصريح السائق ويصدر مخالفة على الشركة المشغّلة مع إخطارها بالبريد الإلكتروني، ثم يستكمل التحقيق وجهاً لوجه.",
-  "Raise recording exception": "رفع استثناء التسجيل",
-  "Vehicle suspended — recording exception raised": "المركبة موقوفة — تم رفع استثناء التسجيل",
-  "Vehicle suspended, driver permit blocked, and a company fine issued and notified by email. Release the suspension once the recording issue is resolved.":
-    "تم إيقاف المركبة وحجب تصريح السائق وإصدار مخالفة على الشركة وإخطارها بالبريد الإلكتروني. ارفع الإيقاف بمجرد معالجة مشكلة التسجيل.",
-  "Vehicle suspension released": "تم رفع إيقاف المركبة",
-  "The recording issue was resolved and the vehicle and permit are back in service.":
-    "تمت معالجة مشكلة التسجيل وعادت المركبة والتصريح إلى الخدمة.",
-  "Release after resolution": "رفع الإيقاف بعد المعالجة",
 }
