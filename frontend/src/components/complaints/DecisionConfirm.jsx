@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { createPortal } from "react-dom"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { Choice } from "@/components/ui/Form"
@@ -38,10 +39,20 @@ export function DecisionConfirm({ action, complaint, role, onCancel, onConfirm }
 
   const destructive = action.tone === "primary" || action.tone === "danger"
 
-  return (
+  // Portalled to the body on purpose. The page content sits inside the
+  // `chart-rise` entry animation, and a transformed ancestor becomes the
+  // containing block for its fixed-position descendants — so without this the
+  // panel measures itself against the article, not the window, and the
+  // Confirm button ends up below the fold.
+  return createPortal(
     <>
       <div className="fixed inset-0 z-40 bg-[rgb(0_0_0/0.25)]" onClick={onCancel} />
-      <aside className="fixed inset-y-0 end-0 z-50 flex w-[420px] max-w-[92vw] flex-col bg-[var(--popover)] shadow-[0_20px_60px_rgb(0_0_0/0.2)]">
+      {/* Sized to its content, not the viewport. As a full-height drawer the
+          Confirm button sat at the bottom of the screen — a long way from the
+          fields it belongs to, and out of reach without scrolling on a short
+          action. Capped so a long form still scrolls internally, with the
+          footer staying directly beneath it. */}
+      <aside className="fixed end-0 top-1/2 z-50 flex max-h-[88vh] w-[420px] max-w-[92vw] -translate-y-1/2 flex-col overflow-hidden rounded-s-2xl bg-[var(--popover)] shadow-[0_20px_60px_rgb(0_0_0/0.2)]">
         <div className="flex items-start justify-between gap-3 border-b border-[var(--border)] px-5 py-4">
           <div className="min-w-0">
             <p className="truncate text-base font-bold">{action.label}</p>
@@ -172,7 +183,8 @@ export function DecisionConfirm({ action, complaint, role, onCancel, onConfirm }
           </Button>
         </div>
       </aside>
-    </>
+    </>,
+    document.body,
   )
 }
 
