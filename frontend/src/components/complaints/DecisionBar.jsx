@@ -25,7 +25,7 @@ import { useT } from "@/i18n"
 const ACTIONS = [
   {
     id: "missingInfo",
-    label: "Essential Information Missing",
+    label: "Return to Customer Happiness",
     icon: ArrowUp,
     tone: "danger",
     roles: ["officer", "supervisor"],
@@ -51,15 +51,25 @@ const ACTIONS = [
     approval: true,
   },
   {
-    // One button for both of the deck's no-enforcement findings: the event
-    // happened but the driver is not at fault, and the event did not happen
-    // at all. Either way nothing is raised against the licence.
+    // One button for both of the deck's no-enforcement findings — nothing is
+    // raised against the licence either way — but they are not the same
+    // finding, so the officer says which before it is recorded.
     id: "noEnforcement",
     label: "No Enforcement Needed",
     icon: CircleCheck,
     tone: "success",
     roles: ["officer", "supervisor"],
     note: "Recorded with no enforcement action against the driver",
+    findings: [
+      {
+        value: "Valid Complaint - Not Guilty",
+        label: "Valid complaint · Driver not guilty",
+      },
+      {
+        value: "Invalid Complaint - No Event Exists",
+        label: "Invalid complaint · No event exists",
+      },
+    ],
   },
   {
     id: "guilty",
@@ -111,10 +121,11 @@ export function DecisionBar({ complaint, role }) {
     return true
   })
 
-  const confirm = ({ note, penalty, officer, fineSubCategory, suspensionDays }) => {
+  const confirm = ({ note, penalty, officer, finding, fineSubCategory, suspensionDays }) => {
     decide(complaint.id, pending, {
       note,
       penalty,
+      finding,
       fineSubCategory,
       suspensionDays,
       officer: OFFICERS.find((o) => o.id === officer),

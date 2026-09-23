@@ -22,26 +22,39 @@ import { COMPLAINTS, NOW } from "@/data/complaints"
  * was renamed to `Confirmed`. The version is in the key, and older keys are
  * swept on load, so that cannot happen silently again.
  */
-const DATA_VERSION = 3
+const DATA_VERSION = 4
 const KEY = `smc-complaints-data.v${DATA_VERSION}`
-const LEGACY_KEYS = ["smc-complaints-data", "smc-complaints-data.v2"]
+const LEGACY_KEYS = [
+  "smc-complaints-data",
+  "smc-complaints-data.v2",
+  "smc-complaints-data.v3",
+]
 
 /**
- * What each decision does to the complaint — the four actions per role set
- * out in the POC scope (§8). `reassign` returns the complaint to an officer;
- * everything else either closes it or sends it up.
+ * What each decision does to the complaint.
+ *
+ * One button, one verified finding — the mapping RTA set out on slide 3 of
+ * the workflow deck. `noEnforcement` is the single exception: both of its
+ * findings close the case without enforcement, so the officer picks which,
+ * and `outcome` here is only the default the panel opens on.
+ *
+ * A finding is not the same thing as a closure. *Face-to-face investigation
+ * needed* and *Essential information missing* are both recorded findings on
+ * cases that are still very much alive — one is upstairs, one is back with
+ * Customer Happiness.
  */
 export const TRANSITIONS = {
   guilty: { stage: "Closed", outcome: "Valid Complaint - Guilty" },
-  // Covers both of the deck's no-enforcement findings — not at fault, and no
-  // event at all. RTA's own export records either as Not Guilty.
   noEnforcement: { stage: "Closed", outcome: "Valid Complaint - Not Guilty" },
   matchFound: { stage: "Closed", outcome: "Potential Match Found" },
-  // None of these settles the case: one sends it back to Customer Happiness
-  // for the missing detail, the others send it up. All need a supervisor.
   missingInfo: { stage: "Returned", outcome: "Essential Information Missing" },
+  faceToFace: {
+    stage: "Escalated",
+    outcome: "Face-to-Face Investigation Needed",
+  },
+  // The only route that records no finding at all: the officer is not ruling,
+  // they are saying they cannot.
   escalate: { stage: "Escalated", outcome: null },
-  faceToFace: { stage: "Escalated", outcome: null },
   reassign: { stage: "Assigned", outcome: null },
 }
 
@@ -104,11 +117,16 @@ const replace = (id, patch) =>
 export function decide(
   id,
   action,
-  { note, by, penalty, officer, fineSubCategory, suspensionDays, method } = {},
+  { note, by, penalty, officer, finding, fineSubCategory, suspensionDays, method } = {},
 ) {
   const complaint = complaintById(id)
   const move = TRANSITIONS[action.id]
   if (!complaint || !move) return
+
+  // Only an action that offers a choice of finding may override the default,
+  // so a stray value cannot record a finding the button does not produce.
+  const allowed = action.findings?.some((f) => f.value === finding)
+  const outcome = allowed ? finding : move.outcome
 
   // Only a guilty finding carries an enforcement action; every other finding
   // records "Not guilty" or nothing at all.
@@ -128,7 +146,7 @@ export function decide(
 
   replace(id, {
     stage: move.stage,
-    outcome: move.outcome,
+    outcome,
     penalty: applied,
     assignee: owner,
     // A reassigned complaint is live again, so the handling time restarts.
@@ -151,9 +169,14 @@ export function decide(
       {
         at: stamp(),
         actor: by ?? "Officer",
-        action: move.outcome
-          ? `Closed — ${move.outcome}${applied ? ` · ${applied}` : ""}`
-          : action.label,
+        // Closed says Closed; a finding recorded on a case that is still
+        // open says what was found, not that it ended.
+        action:
+          move.stage === "Closed"
+            ? `Closed — ${outcome}${applied ? ` · ${applied}` : ""}`
+            : outcome
+              ? `${action.label} — ${outcome}`
+              : action.label,
         note: note?.trim() || action.note,
       },
     ],

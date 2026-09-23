@@ -69,12 +69,62 @@ describe("decide", () => {
     const before = openOne()
     expect(before.stage).not.toBe("Escalated")
 
-    decide(before.id, { id: "faceToFace", label: "Face-to-Face Investigation Needed", note: "n/a" })
+    decide(before.id, { id: "escalate", label: "Escalate to Supervisor", note: "n/a" })
 
     const escalated = allComplaints().filter((c) => c.stage === "Escalated")
     expect(escalated.map((c) => c.id)).toContain(before.id)
-    // ...and it is no longer counted as open work for the officer.
+    // Escalating is the one route that records no finding: the officer is
+    // not ruling, they are saying they cannot.
     expect(complaintById(before.id).outcome).toBeNull()
+  })
+
+  it("records a finding on a case that is still open", () => {
+    const before = openOne()
+    decide(before.id, {
+      id: "faceToFace",
+      label: "Face-to-Face Investigation Needed",
+      note: "n/a",
+    })
+
+    const after = complaintById(before.id)
+    expect(after.stage).toBe("Escalated")
+    expect(after.outcome).toBe("Face-to-Face Investigation Needed")
+    // A finding is not a closure, and the trail must not claim it is.
+    expect(after.timeline.at(-1).action).not.toContain("Closed")
+    expect(after.timeline.at(-1).action).toContain("Face-to-Face")
+  })
+
+  it("lets No Enforcement Needed record either of its two findings", () => {
+    const action = {
+      id: "noEnforcement",
+      label: "No Enforcement Needed",
+      note: "n/a",
+      findings: [
+        { value: "Valid Complaint - Not Guilty", label: "not guilty" },
+        { value: "Invalid Complaint - No Event Exists", label: "no event" },
+      ],
+    }
+
+    const a = openOne()
+    decide(a.id, action)
+    expect(complaintById(a.id).outcome).toBe("Valid Complaint - Not Guilty")
+
+    const b = openOne()
+    decide(b.id, action, { finding: "Invalid Complaint - No Event Exists" })
+    expect(complaintById(b.id).outcome).toBe("Invalid Complaint - No Event Exists")
+    expect(complaintById(b.id).stage).toBe("Closed")
+  })
+
+  it("ignores a finding the action does not offer", () => {
+    const before = openOne()
+    decide(
+      before.id,
+      { id: "guilty", label: "Issue Fine", note: "n/a" },
+      { finding: "Invalid Complaint - No Event Exists" },
+    )
+
+    // Issue Fine produces one finding and one only.
+    expect(complaintById(before.id).outcome).toBe("Valid Complaint - Guilty")
   })
 
   it("applies every action in the transition table", () => {

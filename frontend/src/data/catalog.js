@@ -62,15 +62,19 @@ export const STAGES = [
 ]
 
 /**
- * The verified findings a case closes with (deck slide 3).
+ * The verified findings a case is recorded under (deck slide 3).
  *
- * The first three and the last come from RTA's `Status Reason`; *Invalid
- * complaint* and *Essential information missing* come from the decision model
- * in the deck, which the export happens not to contain an example of.
+ * *Valid Complaint - Guilty*, *Not Guilty* and *Potential Match Found* come
+ * from RTA's `Status Reason`; the other three come from the decision model in
+ * the deck, which the export happens not to contain an example of. Each is
+ * produced by exactly one button on the Take Action card, and *No Enforcement
+ * Needed* produces either of its two depending on which the officer picks.
  */
 export const OUTCOMES = [
   "Valid Complaint - Guilty",
   "Valid Complaint - Not Guilty",
+  "Invalid Complaint - No Event Exists",
+  "Face-to-Face Investigation Needed",
   "Essential Information Missing",
   "Potential Match Found",
 ]
@@ -196,6 +200,8 @@ export const STAGE_TONE = {
 export const OUTCOME_TONE = {
   "Valid Complaint - Guilty": "critical",
   "Valid Complaint - Not Guilty": "neutral",
+  "Invalid Complaint - No Event Exists": "low",
+  "Face-to-Face Investigation Needed": "high",
   "Essential Information Missing": "high",
   "Potential Match Found": "info",
 }

@@ -2,7 +2,6 @@ import { createHashRouter } from "react-router-dom"
 import { App } from "@/app/App"
 import { RolePicker } from "@/pages/RolePicker"
 import { Dashboard } from "@/pages/Dashboard"
-import { Reports } from "@/pages/Reports"
 import { Complaints } from "@/pages/Complaints"
 import { ManualComplaints } from "@/pages/ManualComplaints"
 import { NewManualComplaint } from "@/pages/NewManualComplaint"
@@ -15,7 +14,6 @@ export const router = createHashRouter([
     element: <App />,
     children: [
       { path: "/dashboard", element: <Dashboard /> },
-      { path: "/reports", element: <Reports /> },
       { path: "/complaints", element: <Complaints /> },
       { path: "/complaints/:id", element: <ComplaintDetail /> },
       { path: "/manual-complaints", element: <ManualComplaints /> },

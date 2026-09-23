@@ -2,7 +2,6 @@
 export const shell = {
   "Smart Investigator Initiative": "مبادرة المحقق الذكي",
   Dashboard: "لوحة المعلومات",
-  Reports: "التقارير",
   "Complaint Management": "إدارة الشكاوى",
   "All Complaints": "جميع الشكاوى",
   "My Complaints": "شكاواي",

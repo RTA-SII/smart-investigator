@@ -7,7 +7,6 @@ import { signIn, signOut } from "./session"
 import { resetComplaints, allComplaints } from "./complaintStore"
 import { RolePicker } from "@/pages/RolePicker"
 import { Dashboard } from "@/pages/Dashboard"
-import { Reports } from "@/pages/Reports"
 import { Complaints } from "@/pages/Complaints"
 import { ComplaintDetail } from "@/pages/ComplaintDetail"
 import { ManualComplaints } from "@/pages/ManualComplaints"
@@ -26,7 +25,6 @@ import { setLang } from "@/i18n"
 
 const ROUTES = [
   { path: "/dashboard", element: <Dashboard /> },
-  { path: "/reports", element: <Reports /> },
   { path: "/complaints", element: <Complaints /> },
   { path: "/complaints/:id", element: <ComplaintDetail /> },
   { path: "/manual-complaints", element: <ManualComplaints /> },

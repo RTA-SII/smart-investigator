@@ -2,7 +2,6 @@ import { useSyncExternalStore } from "react"
 import { shell } from "./ar/shell"
 import { domain } from "./ar/domain"
 import { pages } from "./ar/pages"
-import { reports } from "./ar/reports"
 import { forms } from "./ar/forms"
 
 /**
@@ -14,7 +13,7 @@ import { forms } from "./ar/forms"
  * data itself (driver names, companies, free-text statements) stays in its
  * source language, as it does in every bilingual RTA system.
  */
-const AR = { ...shell, ...domain, ...pages, ...reports, ...forms }
+const AR = { ...shell, ...domain, ...pages, ...forms }
 
 const KEY = "smc-complaints-lang"
 const listeners = new Set()

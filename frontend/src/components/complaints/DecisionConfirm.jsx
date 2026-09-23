@@ -25,6 +25,7 @@ export function DecisionConfirm({ action, complaint, role, onCancel, onConfirm }
   const complaints = useComplaints()
   const t = useT()
   const [penalty, setPenalty] = useState("Driver Fine")
+  const [finding, setFinding] = useState(action.findings?.[0].value ?? null)
   const [fineSubCategory, setFineSubCategory] = useState(FINE_SUB_CATEGORIES[0])
   const [suspensionDays, setSuspensionDays] = useState(SUSPENSION_PERIODS[0])
   // An unassigned complaint still has to submit somebody: without this the
@@ -136,6 +137,15 @@ export function DecisionConfirm({ action, complaint, role, onCancel, onConfirm }
             </>
           )}
 
+          {action.findings && (
+            <Block
+              label="Verified finding"
+              hint="Both close the case without enforcement — this is which of the two is recorded against it."
+            >
+              <Choice options={action.findings} value={finding} onChange={setFinding} />
+            </Block>
+          )}
+
           {action.officers && (
             <Block
               label="Investigation officer"
@@ -176,7 +186,14 @@ export function DecisionConfirm({ action, complaint, role, onCancel, onConfirm }
           <Button
             variant={destructive ? "destructive" : "primary"}
             onClick={() =>
-              onConfirm({ note, penalty, officer, fineSubCategory, suspensionDays })
+              onConfirm({
+                note,
+                penalty,
+                officer,
+                finding,
+                fineSubCategory,
+                suspensionDays,
+              })
             }
           >
             Confirm as {role.title}

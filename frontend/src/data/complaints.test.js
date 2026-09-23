@@ -159,9 +159,23 @@ describe("manually logged complaints", () => {
   })
 
   it("keeps logging separate from assignment", () => {
-    // Nothing seeded is assigned to the signed-in officer, but they have
-    // still logged complaints — the two must not be the same field.
-    expect(COMPLAINTS.some((c) => c.assignee?.id === ROLES[0].staff.code)).toBe(false)
+    // The signed-in officer both logs complaints and owns them, so the two
+    // fields have to be able to disagree on the same row.
+    const code = ROLES[0].staff.code
+    expect(
+      COMPLAINTS.some((c) => c.assignee?.id === code && c.loggedBy?.id !== code),
+    ).toBe(true)
+  })
+
+  it("hands the signed-in officer a history but never live work", () => {
+    // Signing in onto a blank page reads as a broken demo, so their closed
+    // work is seeded. Open work is not: their desk has to be clear or the
+    // first arrival never fires.
+    const code = ROLES[0].staff.code
+    const mine = COMPLAINTS.filter((c) => c.assignee?.id === code)
+
+    expect(mine.length).toBeGreaterThan(3)
+    expect(mine.every((c) => c.stage === "Closed")).toBe(true)
   })
 })
 

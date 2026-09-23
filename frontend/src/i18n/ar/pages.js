@@ -1,7 +1,6 @@
 /** Page titles, table headers, actions, and the copy around them. */
 export const pages = {
   "Complaints Dashboard": "لوحة الشكاوى",
-  "Complaint Reports": "تقارير الشكاوى",
   "Period overview": "نظرة عامة على الفترة",
   Today: "اليوم",
   "7 Days": "٧ أيام",
@@ -109,8 +108,7 @@ export const pages = {
 
   // The Take Action card — RTA's verified findings.
   "Take Action": "اتخاذ إجراء",
-  "Essential Information Missing": "معلومات أساسية ناقصة",
-  "Face-to-Face Investigation Needed": "مطلوب تحقيق وجهاً لوجه",
+  "Return to Customer Happiness": "الإعادة إلى سعادة المتعاملين",
   "Escalate to Supervisor": "التصعيد إلى المشرف",
   "No Enforcement Needed": "لا يلزم اتخاذ إجراء",
   "Issue Fine": "إصدار مخالفة",

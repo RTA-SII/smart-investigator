@@ -1,10 +1,4 @@
-import {
-  BarChart3,
-  Bell,
-  ClipboardList,
-  LayoutDashboard,
-  CirclePlus,
-} from "lucide-react"
+import { Bell, ClipboardList, LayoutDashboard, CirclePlus } from "lucide-react"
 
 /**
  * Nav for this module only — no other SMC modules appear. The shape follows
@@ -23,14 +17,14 @@ export function navSections(role, complaints) {
     { to: "/manual-complaints", label: "Manual Complaints", icon: CirclePlus },
   ]
 
-  const top = [
-    { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { to: "/reports", label: "Reports", icon: BarChart3 },
-  ]
+  // Reports is gone for both roles. SMC carries one, but it reports on the
+  // whole monitoring estate; a complaints-only module has the dashboard for
+  // the same figures and nothing further to say.
+  const top = [{ to: "/dashboard", label: "Dashboard", icon: LayoutDashboard }]
 
   // Matching SMC: an inspector's Alert Management section is My Alerts and
   // Manual Alerts only — the estate-wide list and the escalation queue are
-  // the supervisor's. Dashboard and Reports stay for both, as they do there.
+  // the supervisor's.
   if (role.id !== "supervisor") {
     return [{ items: top }, { title: "Complaint Management", items: work }]
   }

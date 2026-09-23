@@ -157,17 +157,23 @@ function buildOne(i, fresh = false) {
       penalty =
         r() < 0.32 ? "Fine & Suspension" : r() < 0.7 ? "Driver Fine" : "Verbal Warning"
     } else if (ai.verdict === "False Positive") {
-      // No enforcement either way — RTA's export records both the "not at
-      // fault" and the "no event" case as Not Guilty.
-      outcome = "Valid Complaint - Not Guilty"
+      // Cross-validation found nothing to support the report at all, which
+      // is the "no event exists" finding rather than "not at fault".
+      outcome = "Invalid Complaint - No Event Exists"
       penalty = "Not guilty"
     } else {
+      // The event happened; the driver is not answerable for it.
       outcome = "Valid Complaint - Not Guilty"
       penalty = "Not guilty"
     }
   }
 
-  const assignee = stage === "New" ? null : pick(r, SEED_OFFICERS)
+  // Closed work can carry the signed-in officer's name; anything still open
+  // cannot, or their desk is not clear at sign-in and no arrival ever fires.
+  const assignee =
+    stage === "New"
+      ? null
+      : pick(r, stage === "Closed" ? OFFICERS : SEED_OFFICERS)
 
   const complaint = {
     id: `CMP-${String(41_200 + i).padStart(6, "0")}`,
@@ -292,7 +298,8 @@ export function buildArrival(i) {
  */
 function fromRta(c, i) {
   const r = rng(4_100_021 + i * 6361)
-  const officer = pick(r, SEED_OFFICERS)
+  // RTA's cases all arrive closed, so the signed-in officer can own them.
+  const officer = pick(r, OFFICERS)
   return {
     ...c,
     stage: "Closed",

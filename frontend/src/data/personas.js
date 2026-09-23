@@ -38,12 +38,13 @@ export const OFFICERS = [
 ]
 
 /**
- * Who the seeded backlog is spread across.
+ * Who the seeded *open* backlog is spread across.
  *
  * The signed-in officer starts with an empty desk — their first complaint is
- * the one that arrives after they log in — so nothing seeded carries their
- * name. They stay in `OFFICERS`, because a supervisor can still assign to
- * them and the performance report still lists them.
+ * the one that arrives after they log in — so nothing still open carries
+ * their name. Closed work is drawn from the full `OFFICERS` list instead:
+ * signing in onto a blank page reads as a broken demo, and their own history
+ * is what My Complaints should open on.
  */
 export const SEED_OFFICERS = OFFICERS.filter((o) => o.id !== ROLES[0].staff.code)
 
