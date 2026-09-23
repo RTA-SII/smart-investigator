@@ -11,6 +11,10 @@ export const pages = {
   Total: "الإجمالي",
   Open: "مفتوحة",
   open: "مفتوحة",
+  closed: "مغلقة",
+  "No complaints": "لا توجد شكاوى",
+  "Your period overview": "نظرة عامة على فترتك",
+  "Your complaints only": "شكاواك فقط",
   "SLA Breached": "تجاوز المدة",
   "Avg Handling": "متوسط المعالجة",
 

@@ -136,8 +136,14 @@ function buildOne(i, fresh = false) {
   // work already picked up, and only a fresh arrival is ever `New`.
   let stage
   if (ageMinutes < 5) stage = fresh ? "New" : "Assigned"
-  else if (ageMinutes < 120) stage = r() < 0.5 ? "Assigned" : "Under Investigation"
-  else if (r() < 0.16) stage = "Escalated"
+  else if (ageMinutes < 120) {
+    // Recency and closure are not perfectly correlated: plenty of recent
+    // complaints are settled inside the handling target. Without this the
+    // newest rows sort to the top of every list and page one shows nothing
+    // but open work.
+    const roll = r()
+    stage = roll < 0.4 ? "Closed" : roll < 0.7 ? "Assigned" : "Under Investigation"
+  } else if (r() < 0.16) stage = "Escalated"
   else stage = "Closed"
 
   const ai = buildAi(r, type, category)

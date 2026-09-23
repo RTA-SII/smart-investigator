@@ -144,7 +144,9 @@ export function AiCrossValidation({ complaint }) {
         <p className="text-[10px] font-semibold tracking-[0.5px] text-[var(--muted-foreground)] uppercase">
           Recommended Action
         </p>
-        <p className="mt-1 text-base font-bold">{ai.recommendation}</p>
+        {/* SMC writes a justification here, not a label — the reasoning is
+            the point, so it reads as prose rather than a verdict chip. */}
+        <p className="mt-1.5 text-sm leading-relaxed">{ai.recommendation}</p>
       </div>
     </Card>
   )

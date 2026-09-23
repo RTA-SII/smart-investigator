@@ -31,10 +31,18 @@ export function Dashboard() {
   const [days, setDays] = useState(7)
   const complaints = useComplaints()
 
+  // An officer's dashboard is about their own caseload, not the centre's.
+  // A supervisor monitors everything, so theirs stays estate-wide.
+  const mine = role.id !== "supervisor"
+
   const rows = useMemo(() => {
     const cutoff = NOW.getTime() - days * 86_400_000
-    return complaints.filter((c) => new Date(c.receivedAt).getTime() >= cutoff)
-  }, [complaints, days])
+    return complaints.filter(
+      (c) =>
+        new Date(c.receivedAt).getTime() >= cutoff &&
+        (!mine || c.assignee?.id === role.staff.code),
+    )
+  }, [complaints, days, mine, role.staff.code])
 
   const k = useMemo(() => stats(rows), [rows])
   const rangeLabel = t(RANGES.find((r) => r.value === days).label).toLowerCase()
@@ -51,8 +59,12 @@ export function Dashboard() {
       {role.id !== "supervisor" && <MyProductivity role={role} />}
 
       <SectionHeader
-        title={t("Period overview")}
-        subtitle={`${t("KPIs and charts for the selected time range")} · ${t("last")} ${rangeLabel}`}
+        title={mine ? t("Your period overview") : t("Period overview")}
+        subtitle={`${
+          mine
+            ? t("Your complaints only")
+            : t("KPIs and charts for the selected time range")
+        } · ${t("last")} ${rangeLabel}`}
         actions={
           <Segmented
             options={RANGES.map((r) => ({

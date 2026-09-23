@@ -1,7 +1,6 @@
 /** Chrome: navigation, top bar, and the role picker. */
 export const shell = {
-  "SMC Portal": "بوابة المراقبة الذكية",
-  "Smart Monitoring Centre": "مركز المراقبة الذكية",
+  "Smart Investigator Initiative": "مبادرة المحقق الذكي",
   Dashboard: "لوحة المعلومات",
   Reports: "التقارير",
   "Complaint Management": "إدارة الشكاوى",

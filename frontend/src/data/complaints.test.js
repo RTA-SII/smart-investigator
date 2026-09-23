@@ -103,15 +103,30 @@ describe("complaintById", () => {
 })
 
 describe("the vocabulary stays inside the action set", () => {
+  it("justifies its recommendation rather than naming one", () => {
+    // SMC writes a short rationale here, not a label, so the check is that
+    // it reads as prose — a one-word recommendation is the regression.
+    for (const c of COMPLAINTS) {
+      expect(c.ai.recommendation.length).toBeGreaterThan(80)
+      expect(c.ai.recommendation.trim()).toMatch(/\.$/)
+    }
+  })
+
   it("never recommends an action the officer does not have", () => {
-    const actions = new Set([
-      "Escalate to Supervisor",
-      "Reassign to Investigation Officer",
-      "False Positive",
+    // The retired vocabulary is what to guard against: these were invented
+    // before RTA's decision model replaced them.
+    const retired = [
+      "Dismiss Complaint",
+      "Request Additional Evidence",
+      "Substantiate",
       "No Fine Required",
       "Issue Fine",
-    ])
-    for (const c of COMPLAINTS) expect(actions.has(c.ai.recommendation)).toBe(true)
+    ]
+    for (const c of COMPLAINTS) {
+      for (const word of retired) {
+        expect(c.ai.recommendation, c.id).not.toContain(word)
+      }
+    }
   })
 
   it("uses only the three current verdicts", () => {

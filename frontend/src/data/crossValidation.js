@@ -39,17 +39,17 @@ export function buildAi(r, type, category) {
 
   const checks = AI_CHECKS.map((label) => ({ label, pass: r() < passBias }))
 
-  // Every recommendation must be an action the officer actually has. The
-  // old set recommended "Dismiss Complaint" and "Request Additional
-  // Evidence", neither of which is a button on the Take Action card.
+  // SMC does not give a one-word recommendation — it writes a short
+  // justification: what to do, why the evidence supports it, and the caveat
+  // the officer should carry into the decision. Mirrored here, and every
+  // recommended action is one the officer actually has on the Take Action
+  // card.
   const recommendation =
     verdict === "Confirmed"
-      ? r() < 0.4
-        ? "Issue Fine"
-        : "Escalate to Supervisor"
+      ? `Record the finding as Valid Complaint — Driver Guilty and raise the fine against the driver's licence; telematics and in-cab footage both place the vehicle at the reported time and corroborate the ${type.toLowerCase()}. Consider a suspension alongside the fine where the driver's prior record shows the same conduct.`
       : verdict === "False Positive"
-        ? "False Positive"
-        : "Escalate to Supervisor"
+        ? `Close as Invalid Complaint — No Event Exists; the recorded behaviour is within normal parameters for the trip and no signal supports the allegation. No fine or penalty should be issued, but keep the record so a repeat report against the same plate can be read as a pattern.`
+        : `Do not rule on this alone — the signals conflict and confidence sits below the threshold at which a penalty is safe. Escalate for a supervisor view, or request the missing footage before deciding; closing it either way on the present evidence risks an unsound finding.`
 
   const summary =
     verdict === "Confirmed"

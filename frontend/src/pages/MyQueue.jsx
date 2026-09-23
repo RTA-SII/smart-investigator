@@ -5,6 +5,7 @@ import { Segmented } from "@/components/ui/Segmented"
 import { ComplaintTable } from "@/components/complaints/ComplaintTable"
 import { FilterBar } from "@/components/complaints/FilterBar"
 import { MyProductivity } from "@/components/complaints/MyProductivity"
+import { ModeTiles } from "@/components/complaints/ModeTiles"
 import { useComplaints } from "@/app/complaintStore"
 import { roleById } from "@/data/personas"
 import { useSession } from "@/app/session"
@@ -30,11 +31,14 @@ export function MyQueue() {
   const [filters, setFilters] = useState(EMPTY_FILTERS)
   const complaints = useComplaints()
 
-  const rows = useMemo(() => {
+  // The mode tiles count this set — everything of the officer's in scope,
+  // before the dropdowns narrow it.
+  const scoped = useMemo(() => {
     const mine = complaints.filter((c) => c.assignee?.id === role.staff.code)
-    const scoped = scope === "open" ? mine.filter((c) => c.stage !== "Closed") : mine
-    return applyFilters(scoped, filters)
-  }, [complaints, role.staff.code, scope, filters])
+    return scope === "open" ? mine.filter((c) => c.stage !== "Closed") : mine
+  }, [complaints, role.staff.code, scope])
+
+  const rows = useMemo(() => applyFilters(scoped, filters), [scoped, filters])
 
   return (
     <>
@@ -52,6 +56,14 @@ export function MyQueue() {
       <div className="mb-5">
         <MyProductivity role={role} bare />
       </div>
+
+      {/* Counts are of everything assigned to the officer, so selecting a
+          mode narrows the list without blanking the other tiles. */}
+      <ModeTiles
+        rows={scoped}
+        value={filters.mode}
+        onChange={(mode) => setFilters({ ...filters, mode })}
+      />
 
       <FilterBar
         filters={filters}

@@ -61,11 +61,14 @@ export function NavBrand({ className }) {
     <div className={cn("flex min-w-0 items-center gap-3 px-5 py-5", className)}>
       <img src={asset("rta-icon.svg")} alt="" className="size-9 shrink-0" />
       <div className="min-w-0">
-        <p className="truncate text-sm leading-tight font-bold tracking-[0.35px]">
-          {t("SMC Portal")}
+        {/* Wraps rather than truncates — the name is too long for the 256px
+            rail on one line, and "Smart Investigator Init…" is worse than
+            two lines. */}
+        <p className="text-sm leading-tight font-bold tracking-[0.35px]">
+          {t("Smart Investigator Initiative")}
         </p>
         <p className="truncate text-[10px] tracking-[1px] text-[var(--muted-foreground)] uppercase">
-          {t("Smart Monitoring Centre")}
+          {t("Complaints Investigation")}
         </p>
       </div>
     </div>

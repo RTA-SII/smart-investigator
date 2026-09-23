@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card"
 import { Badge } from "@/components/ui/Badge"
 import { Table, TD, TH, THead, TR } from "@/components/ui/Table"
 import { FilterBar } from "@/components/complaints/FilterBar"
+import { ModeTiles } from "@/components/complaints/ModeTiles"
 import { SlaClock } from "@/components/complaints/SlaClock"
 import { useComplaints } from "@/app/complaintStore"
 import { roleById } from "@/data/personas"
@@ -19,12 +20,6 @@ import { usePaged } from "@/lib/paging"
 import { Pagination } from "@/components/ui/Pagination"
 
 const MODE_ICON = { Taxi: Car, "Public Bus": Bus, "School Bus": School, Limousine: Crown }
-const MODE_TONE = {
-  Taxi: "var(--tone-high)",
-  "Public Bus": "var(--tone-info)",
-  "School Bus": "#ff8200",
-  Limousine: "#9b59b6",
-}
 
 /**
  * Complaints logged inside SMC rather than received from CRM.
@@ -51,19 +46,6 @@ export function ManualComplaints() {
   const rows = useMemo(() => applyFilters(manual, filters), [manual, filters])
   const paged = usePaged(rows)
 
-  const tiles = useMemo(
-    () =>
-      Object.keys(MODE_ICON).map((mode) => {
-        const hits = manual.filter((c) => c.mode === mode)
-        return {
-          mode,
-          total: hits.length,
-          open: hits.filter((c) => c.stage !== "Closed").length,
-          closed: hits.filter((c) => c.stage === "Closed").length,
-        }
-      }),
-    [manual],
-  )
 
   return (
     <>
@@ -97,38 +79,11 @@ export function ManualComplaints() {
         }
       />
 
-      <div className="mb-4 grid grid-cols-2 items-stretch gap-3 lg:grid-cols-4">
-        {tiles.map((tile) => {
-          const Icon = MODE_ICON[tile.mode]
-          return (
-            <Card key={tile.mode} glint surface="dash-tile" className="px-3 py-2.5">
-              <div className="relative flex items-start justify-between gap-2">
-                <p className="truncate text-[10px] font-semibold tracking-[0.5px] text-[var(--muted-foreground)] uppercase">
-                  {t(tile.mode)}
-                </p>
-                <Icon
-                  className="size-3.5 shrink-0"
-                  style={{ color: MODE_TONE[tile.mode] }}
-                />
-              </div>
-              <p className="relative mt-1.5 text-lg leading-tight font-bold">{tile.total}</p>
-              <p className="relative mt-0.5 truncate text-[9px] text-[var(--muted-foreground)]">
-                {tile.total ? (
-                  <>
-                    <span className="font-semibold text-[var(--primary)]">
-                      {tile.open} open
-                    </span>{" "}
-                    · {tile.closed} closed
-                  </>
-                ) : (
-                  "No complaints"
-                )}
-              </p>
-            </Card>
-          )
-        })}
-      </div>
-
+      <ModeTiles
+        rows={manual}
+        value={filters.mode}
+        onChange={(mode) => setFilters({ ...filters, mode })}
+      />
       <FilterBar filters={filters} onChange={setFilters} count={rows.length} />
 
       <Card className="overflow-hidden">
