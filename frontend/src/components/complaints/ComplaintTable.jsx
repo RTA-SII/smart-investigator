@@ -44,9 +44,17 @@ export function ComplaintTable({ rows, emptyLabel, assignable = false }) {
         {paged.page.map((c) => {
           const Icon = modeIcon(c.mode)
           return (
-            <TR key={c.id} onClick={() => navigate(`/complaints/${c.id}`)}>
+            <TR
+              key={c.id}
+              className="group"
+              onClick={() => navigate(`/complaints/${c.id}`)}
+            >
               <TD>
-                <span className="ltr-value font-mono text-[13px] font-bold text-[var(--primary)]">
+                {/* The whole row navigates, so the id underlines on row hover
+                    rather than only when the pointer is over the id itself —
+                    it is the row's destination, and saying so early is the
+                    point of underlining it at all. */}
+                <span className="ltr-value font-mono text-[13px] font-bold text-[var(--primary)] underline-offset-2 group-hover:underline">
                   {c.id}
                 </span>
               </TD>
