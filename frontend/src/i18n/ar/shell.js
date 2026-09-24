@@ -26,7 +26,6 @@ export const shell = {
   Operational: "يعمل",
 
   "Roads and Transport Authority": "هيئة الطرق والمواصلات",
-  "Complaints Investigation": "التحقيق في الشكاوى",
   "System Online": "النظام متصل",
   "Select Role": "اختر الدور",
   "Select a persona to continue to the complaints dashboard":

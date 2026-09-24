@@ -36,7 +36,7 @@ export function RolePicker() {
               Roads and Transport Authority
             </p>
             <p className="truncate text-[11px] tracking-[1px] text-[var(--muted-foreground)] uppercase">
-              Complaints Investigation
+              Smart Investigator Initiative
             </p>
           </div>
         </div>
