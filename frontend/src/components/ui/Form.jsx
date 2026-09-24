@@ -1,5 +1,6 @@
 import { Search } from "lucide-react"
 import { Card } from "@/components/ui/Card"
+import { SelectMenu } from "@/components/ui/SelectMenu"
 import { useT } from "@/i18n"
 import { cn } from "@/lib/cn"
 
@@ -69,18 +70,13 @@ export function Textarea({ className, ...rest }) {
   return <textarea className={cn(control, "min-h-24", className)} {...rest} />
 }
 
-export function SelectField({ options, placeholder, className, ...rest }) {
-  const t = useT()
-  return (
-    <select className={cn(control, "h-9 cursor-pointer", className)} {...rest}>
-      <option value="">{placeholder}</option>
-      {options.map((o) => (
-        <option key={o} value={o}>
-          {t(o)}
-        </option>
-      ))}
-    </select>
-  )
+/**
+ * The form's dropdown. Delegates to `SelectMenu` so a menu opened here looks
+ * like one opened on the filter bar, instead of whatever the operating
+ * system draws for a native `<select>`.
+ */
+export function SelectField(props) {
+  return <SelectMenu {...props} />
 }
 
 /** Registry lookup — a field with a Get button welded to its trailing edge. */

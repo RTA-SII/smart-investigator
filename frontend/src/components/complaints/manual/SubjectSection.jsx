@@ -42,7 +42,7 @@ export function SubjectSection({ draft, set }) {
             placeholder={t("Select mode")}
             options={MODES}
             value={draft.mode}
-            onChange={(e) => set("mode", e.target.value)}
+            onChange={(v) => set("mode", v)}
           />
         </Field>
       </div>

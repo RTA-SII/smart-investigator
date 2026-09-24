@@ -27,8 +27,8 @@ export function AllegationSection({ draft, set }) {
             placeholder={t("Select category")}
             options={Object.keys(CATEGORIES)}
             value={draft.category}
-            onChange={(e) => {
-              set("category", e.target.value)
+            onChange={(v) => {
+              set("category", v)
               set("type", "")
             }}
           />
@@ -40,8 +40,7 @@ export function AllegationSection({ draft, set }) {
             options={types}
             value={draft.type}
             disabled={!draft.category}
-            onChange={(e) => set("type", e.target.value)}
-            className="disabled:opacity-50"
+            onChange={(v) => set("type", v)}
           />
         </Field>
 

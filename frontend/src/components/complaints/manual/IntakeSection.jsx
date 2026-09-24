@@ -1,5 +1,6 @@
 import { Inbox } from "lucide-react"
 import { Field, FormSection, Input, SelectField } from "@/components/ui/Form"
+import { DateTimeField } from "@/components/ui/DateTimeField"
 import { CHANNELS } from "@/data/catalog"
 import { NowButton } from "./NowButton"
 import { nowLocal } from "@/lib/manualComplaint"
@@ -21,10 +22,9 @@ export function IntakeSection({ draft, set, officer }) {
           action={<NowButton onClick={() => set("receivedAt", nowLocal())} />}
           hint={t("Starts the five-minute handling clock.")}
         >
-          <Input
-            type="datetime-local"
+          <DateTimeField
             value={draft.receivedAt}
-            onChange={(e) => set("receivedAt", e.target.value)}
+            onChange={(v) => set("receivedAt", v)}
           />
         </Field>
 
@@ -33,7 +33,7 @@ export function IntakeSection({ draft, set, officer }) {
             placeholder={t("Select channel")}
             options={CHANNELS}
             value={draft.channel}
-            onChange={(e) => set("channel", e.target.value)}
+            onChange={(v) => set("channel", v)}
           />
         </Field>
 

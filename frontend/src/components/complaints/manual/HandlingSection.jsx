@@ -24,7 +24,7 @@ export function HandlingSection({ draft, set }) {
             placeholder={t("Unassigned")}
             options={officers.map((o) => `${o.name} · ${o.load} open`)}
             value={draft.assignee}
-            onChange={(e) => set("assignee", e.target.value)}
+            onChange={(v) => set("assignee", v)}
           />
         </Field>
       </div>

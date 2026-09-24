@@ -153,17 +153,39 @@ export const ACTIVITY_SYSTEM = {
 export const COMPANIES = ["Kabi", "Arabia Taxi", "DTC", "National Taxi"]
 
 export const LOCATIONS = [
-  "Al Barsha",
+  "Al Satwa",
   "Deira",
   "Bur Dubai",
-  "Business Bay",
+  "Al Barsha",
   "Jumeirah",
+  "Business Bay",
   "Al Quoz",
   "Dubai Marina",
   "Al Nahda",
   "Mirdif",
   "Dubai Silicon Oasis",
 ]
+
+/**
+ * The part of the city each location sits in.
+ *
+ * Shown beneath the name when an officer is picking one: half of these read
+ * alike to anyone who does not know Dubai well, and the officer taking a
+ * complaint at a counter is often working from a caller's rough description.
+ */
+export const LOCATION_DISTRICTS = {
+  "Al Satwa": "Central Dubai",
+  Deira: "Northern Dubai",
+  "Bur Dubai": "Central Dubai",
+  "Al Barsha": "Western Dubai",
+  Jumeirah: "Coastal Strip",
+  "Business Bay": "Central Dubai",
+  "Al Quoz": "Industrial Belt",
+  "Dubai Marina": "Coastal Strip",
+  "Al Nahda": "Northern Dubai",
+  Mirdif: "Eastern Dubai",
+  "Dubai Silicon Oasis": "Outer Dubai",
+}
 
 /**
  * What cross-validation actually checks, named after the systems the deck

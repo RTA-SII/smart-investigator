@@ -1,6 +1,7 @@
 import { MapPin } from "lucide-react"
 import { Field, FormSection, Input, SelectField } from "@/components/ui/Form"
-import { LOCATIONS } from "@/data/catalog"
+import { DateTimeField } from "@/components/ui/DateTimeField"
+import { LOCATION_DISTRICTS, LOCATIONS } from "@/data/catalog"
 import { NowButton } from "./NowButton"
 import { nowLocal } from "@/lib/manualComplaint"
 import { useT } from "@/i18n"
@@ -21,19 +22,25 @@ export function IncidentSection({ draft, set }) {
           action={<NowButton onClick={() => set("incidentAt", nowLocal())} />}
           hint={t("May be well before the complaint was received.")}
         >
-          <Input
-            type="datetime-local"
+          <DateTimeField
             value={draft.incidentAt}
-            onChange={(e) => set("incidentAt", e.target.value)}
+            onChange={(v) => set("incidentAt", v)}
           />
         </Field>
 
         <Field label={t("Location")} required>
           <SelectField
             placeholder={t("Select location")}
-            options={LOCATIONS}
+            searchable
+            searchPlaceholder={t("Search location or district…")}
+            icon={MapPin}
+            options={LOCATIONS.map((l) => ({
+              value: l,
+              label: l,
+              hint: LOCATION_DISTRICTS[l],
+            }))}
             value={draft.location}
-            onChange={(e) => set("location", e.target.value)}
+            onChange={(v) => set("location", v)}
           />
         </Field>
 
