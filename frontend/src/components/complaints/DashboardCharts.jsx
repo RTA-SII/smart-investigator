@@ -48,12 +48,15 @@ const AXIS = {
 function ChartCard({ title, hint, legend, children }) {
   const t = useT()
   return (
-    <Card className="chart-rise p-5">
+    <Card className="chart-rise flex h-full flex-col p-5">
       <div className="mb-4 flex items-center gap-2">
         <CardTitle>{t(title)}</CardTitle>
         <InfoTip label={hint} />
       </div>
-      {children}
+      {/* Cards in a row are stretched to the tallest of them. The chart takes
+          that surplus rather than leaving it under the legend: a bar chart
+          grows into it, a pie centres itself in it. */}
+      <div className="flex min-h-0 flex-1 flex-col justify-center">{children}</div>
       {legend && (
         <div className="mt-4 flex flex-wrap gap-2">
           {legend.map((l) => (
@@ -166,7 +169,7 @@ export function CategorySplit({ rows }) {
       hint="Volume per category in this period. Driver behaviour is the category telematics can corroborate hardest."
       legend={data.map((d) => ({ label: d.name, color: d.color, value: d.value }))}
     >
-      <Bar3D data={data.map((d) => ({ ...d, name: t(d.name) }))} />
+      <Bar3D className="h-full" data={data.map((d) => ({ ...d, name: t(d.name) }))} />
     </ChartCard>
   )
 }
@@ -214,7 +217,7 @@ export function ModeSplit({ rows }) {
       hint="Where complaints land across the six modes RTA tracks. Modes with nothing in this period are left out."
       legend={data.map((d) => ({ label: d.name, color: d.color, value: d.value }))}
     >
-      <Bar3D data={data.map((d) => ({ ...d, name: t(d.name) }))} />
+      <Bar3D className="h-full" data={data.map((d) => ({ ...d, name: t(d.name) }))} />
     </ChartCard>
   )
 }

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react"
-import { Bot, Loader2 } from "lucide-react"
+import { Bot, ChevronDown, CircleCheck, CircleX, Loader2 } from "lucide-react"
 import { Card, CardTitle } from "@/components/ui/Card"
 import { InfoTip } from "@/components/ui/InfoTip"
 import { VERDICT_TONE } from "@/data/catalog"
 import { CrossValidationReport } from "./CrossValidationReport"
 import { verifyAi } from "@/app/complaintStore"
 import { useT } from "@/i18n"
+import { cn } from "@/lib/cn"
 
 const TONE = {
   critical: "var(--tone-critical)",
@@ -28,6 +29,10 @@ const RUN_MS = 1400
 export function AiCrossValidation({ complaint }) {
   const { ai } = complaint
   const [running, setRunning] = useState(false)
+  // Collapsed on arrival, as SMC has it: the verdict, the checks and the
+  // recommended action are what an officer needs to act; the full report is
+  // what they open when they have to justify it.
+  const [open, setOpen] = useState(false)
   const t = useT()
   const tone = TONE[VERDICT_TONE[ai.verdict]] ?? TONE.high
 
@@ -47,7 +52,19 @@ export function AiCrossValidation({ complaint }) {
       </span>
       <CardTitle className="text-base">{t("AI Cross-Validation")}</CardTitle>
       <InfoTip label={t("How the engine ruled after weighing eight telematics and camera signals against the complaint.")} />
-      {!complaint.aiVerified && (
+      {complaint.aiVerified ? (
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          aria-label={open ? t("Hide the investigation report") : t("Show the investigation report")}
+          className="ms-auto grid size-7 shrink-0 place-items-center rounded-lg text-[var(--muted-foreground)] transition-colors duration-150 hover:bg-[var(--accent)]"
+        >
+          <ChevronDown
+            className={cn("size-4 transition-transform duration-200", open && "rotate-180")}
+          />
+        </button>
+      ) : (
         <button
           type="button"
           disabled={running}
@@ -117,11 +134,39 @@ export function AiCrossValidation({ complaint }) {
         </div>
       </div>
 
-      {/* The evidence, the reasoning and the recommendation all live in the
-          report below — SMC issues a numbered document here rather than a
-          grid of pass/fail chips and a sentence, and the document is what an
-          officer can defend a ruling with. */}
-      <CrossValidationReport complaint={complaint} />
+      <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+        {ai.checks.map((c) => {
+          const mark = c.pass ? "var(--tone-low)" : "var(--tone-critical)"
+          const Icon = c.pass ? CircleCheck : CircleX
+          return (
+            <li
+              key={c.label}
+              className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5"
+              style={{
+                background: `color-mix(in oklab, ${mark} 8%, transparent)`,
+                border: `1px solid color-mix(in oklab, ${mark} 20%, transparent)`,
+              }}
+            >
+              <Icon className="size-4 shrink-0" style={{ color: mark }} />
+              <span className="min-w-0 truncate text-sm">{t(c.label)}</span>
+            </li>
+          )
+        })}
+      </ul>
+
+      <div className="mt-4 rounded-xl bg-[rgb(0_0_0/0.03)] px-4 py-3 dark:bg-[rgb(255_255_255/0.04)]">
+        <p className="text-[10px] font-semibold tracking-[0.5px] text-[var(--muted-foreground)] uppercase">
+          {t("Recommended Action")}
+        </p>
+        {/* SMC writes a justification here, not a label — the reasoning is
+            the point, so it reads as prose rather than a verdict chip. */}
+        <p className="mt-1.5 text-sm leading-relaxed">{ai.recommendation}</p>
+      </div>
+
+      {/* The numbered report is the long form of the same eight checks. It
+          is behind the chevron because it is evidence for a decision, not
+          the decision itself. */}
+      {open && <CrossValidationReport complaint={complaint} />}
 
     </Card>
   )

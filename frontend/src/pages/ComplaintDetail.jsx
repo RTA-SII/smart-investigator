@@ -2,8 +2,8 @@ import { useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import {
   ChevronLeft,
-  ClipboardCheck,
   ClipboardList,
+  Download,
   IdCard,
   LayoutList,
   MessageSquare,
@@ -19,8 +19,9 @@ import { PartiesPanel } from "@/components/complaints/panels/PartiesPanel"
 import { EvidencePanel } from "@/components/complaints/panels/EvidencePanel"
 import { AuditPanel } from "@/components/complaints/panels/AuditPanel"
 import { CommentsPanel } from "@/components/complaints/panels/CommentsPanel"
-import { InvestigationForm } from "@/components/complaints/panels/InvestigationForm"
 import { CaseExceptions } from "@/components/complaints/CaseExceptions"
+import { Button } from "@/components/ui/Button"
+import { downloadInvestigationForm } from "@/lib/investigationFormDoc"
 import { useT } from "@/i18n"
 import { AssignmentPanel } from "@/components/complaints/AssignmentPanel"
 import { useComplaints } from "@/app/complaintStore"
@@ -28,12 +29,12 @@ import { roleById } from "@/data/personas"
 import { PRIORITY_TONE, STAGE_TONE } from "@/data/catalog"
 import { useSession } from "@/app/session"
 
-// SMC keeps cross-validation inline on the details page, not behind a tab —
-// so these four are the whole set, exactly as the portal has them.
+// SMC keeps cross-validation inline on the details page, not behind a tab.
+// The investigation form is not here either: it is a record to be filed
+// rather than a workspace, so it downloads from the header instead.
 const TABS = (comments) => [
   { value: "details", label: "Details", icon: <LayoutList /> },
   { value: "parties", label: "Complainant & Driver", icon: <IdCard /> },
-  { value: "form", label: "Investigation Form", icon: <ClipboardCheck /> },
   { value: "comments", label: "Comments", icon: <MessageSquare />, count: comments },
   { value: "audit", label: "Audit Log", icon: <ClipboardList /> },
 ]
@@ -86,6 +87,15 @@ export function ComplaintDetail() {
           <Badge tone="primary">{complaint.company}</Badge>
           <SlaClock complaint={complaint} size="lg" />
         </span>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="ms-auto shrink-0"
+          onClick={() => downloadInvestigationForm(complaint)}
+        >
+          <Download />
+          {t("Investigation Form")}
+        </Button>
       </div>
 
       {/* Anything blocking a normal finding is said before the tabs, not
@@ -112,7 +122,6 @@ export function ComplaintDetail() {
             </>
           )}
           {tab === "parties" && <PartiesPanel complaint={complaint} />}
-          {tab === "form" && <InvestigationForm complaint={complaint} />}
           {tab === "comments" && <CommentsPanel complaint={complaint} role={role} />}
           {tab === "audit" && <AuditPanel complaint={complaint} />}
         </div>

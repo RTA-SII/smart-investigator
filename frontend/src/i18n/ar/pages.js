@@ -135,6 +135,12 @@ export const pages = {
 
   // The Investigation Form.
   "Investigation Form": "استمارة التحقيق",
+  "Recommended Action": "الإجراء الموصى به",
+  "Show the investigation report": "عرض تقرير التحقيق",
+  "Hide the investigation report": "إخفاء تقرير التحقيق",
+  "Complaint Closed": "شكوى مغلقة",
+  "Returned to Customer Happiness": "أُعيدت إلى سعادة المتعاملين",
+  "Escalated — awaiting a supervisor ruling": "مُصعّدة — بانتظار قرار المشرف",
   Statements: "الإفادات",
   "Customer's Statement": "إفادة المتعامل",
   "Driver's Statement": "إفادة السائق",

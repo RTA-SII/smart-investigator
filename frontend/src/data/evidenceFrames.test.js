@@ -53,7 +53,7 @@ describe("evidence frames", () => {
     expect(name(frame)).toMatch(/^incab-/)
   })
 
-  it("gives the doc slot no frame", () => {
-    expect(frameFor("CRM complaint transcript", 1, "Reckless driving")).toBeNull()
+  it("gives an unknown slot no frame", () => {
+    expect(frameFor("Some other attachment", 1, "Reckless driving")).toBeNull()
   })
 })

@@ -2,7 +2,6 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { ArrowUp, Banknote, CircleCheck, CircleX, Undo2 } from "lucide-react"
 import { Card, CardTitle } from "@/components/ui/Card"
-import { Badge } from "@/components/ui/Badge"
 import { ActionButton } from "./ActionButton"
 import { DecisionConfirm } from "./DecisionConfirm"
 import { decide } from "@/app/complaintStore"
@@ -104,9 +103,13 @@ export function DecisionBar({ complaint, role }) {
   const [pending, setPending] = useState(null)
   const navigate = useNavigate()
   const t = useT()
-  const decision = complaint.decision
 
-  if (decision) return <DecisionRecorded decision={decision} />
+  // A settled complaint offers no actions at all — it says what was decided.
+  // Seeded history arrives closed without a `decision` record, so the stage
+  // and outcome are what this reads, not the ruling object: without that the
+  // whole back catalogue showed a live Take Action card.
+  const settled = settledLabel(complaint, role)
+  if (settled) return <DecisionSettled complaint={complaint} label={settled} />
 
   const lostItem = complaint.caseType === "Lost Item"
 
@@ -165,19 +168,45 @@ export function DecisionBar({ complaint, role }) {
   )
 }
 
-/** Once a complaint is settled the list is replaced by what was decided. */
-function DecisionRecorded({ decision }) {
+/**
+ * What was decided, in place of the actions.
+ *
+ * Null while the complaint is still someone's to act on. Escalated is the one
+ * stage that depends on who is looking: it is finished for the officer who
+ * referred it and live for the supervisor who has to rule.
+ */
+function settledLabel(c, role) {
+  if (c.stage === "Closed") return `Complaint Closed — ${c.outcome ?? "No finding recorded"}`
+  if (c.stage === "Returned") return "Returned to Customer Happiness"
+  if (c.stage === "Escalated" && role.id !== "supervisor")
+    return "Escalated — awaiting a supervisor ruling"
+  return null
+}
+
+/**
+ * SMC's settled card: one line, centred, in the brand navy. No chips and no
+ * buttons — there is nothing here to do, and anything that looks pressable
+ * invites a click that cannot go anywhere.
+ */
+function DecisionSettled({ complaint, label }) {
+  const t = useT()
+  const { decision, penalty } = complaint
+
   return (
-    <Card className="p-4">
-      <CardTitle className="mb-3">Decision recorded</CardTitle>
-      <div className="flex flex-wrap items-center gap-2">
-        <Badge tone={decision.id === "falsePositive" ? "low" : "critical"}>
-          {decision.label}
-        </Badge>
-        {decision.penalty && <Badge tone="critical">{decision.penalty}</Badge>}
-      </div>
-      <p className="mt-2.5 text-sm text-[var(--muted-foreground)]">{decision.note}</p>
-      <p className="mt-1 text-[11px] text-[var(--muted-foreground)]">{decision.by}</p>
+    <Card className="px-4 py-6">
+      <p className="text-center text-[15px] font-bold text-[var(--primary)]">
+        {t(label)}
+      </p>
+      {penalty && penalty !== "Not guilty" && (
+        <p className="mt-1.5 text-center text-sm text-[var(--muted-foreground)]">
+          {t(penalty)}
+        </p>
+      )}
+      {decision?.by && (
+        <p className="mt-3 text-center text-[11px] text-[var(--muted-foreground)]">
+          {decision.by}
+        </p>
+      )}
     </Card>
   )
 }
