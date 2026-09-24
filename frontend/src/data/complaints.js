@@ -11,6 +11,7 @@ import {
 import { OFFICERS, SEED_OFFICERS } from "./personas"
 import { buildAi } from "./crossValidation"
 import { DRIVER_FIRST, DRIVER_LAST, FIRST, LAST } from "./names"
+import { caseEvidence } from "./caseEvidence"
 import { frameFor } from "./evidenceFrames"
 import { pick, rng } from "./rand"
 import { buildComments } from "./comments"
@@ -298,6 +299,26 @@ export function buildArrival(i) {
 }
 
 /**
+ * A case whose recording an officer can sit and watch cannot also report that
+ * Lynx holds nothing for the trip.
+ *
+ * The investigation report and the evidence panel read the same eight checks,
+ * so a contradiction between them is visible on one screen: the panel playing
+ * footage above a report saying none was retrievable.
+ */
+function withRetrievedRecording(ai, id, receivedAt) {
+  const playable = caseEvidence(id, receivedAt)?.some((e) => e.src)
+  if (!playable) return ai
+
+  return {
+    ...ai,
+    checks: ai.checks.map((k) =>
+      k.label === "Lynx recording retrieved" ? { ...k, pass: true } : k,
+    ),
+  }
+}
+
+/**
  * RTA's own cases, adapted to the generated shape.
  *
  * They arrive settled with their investigation form already filled — which is
@@ -325,10 +346,11 @@ function fromRta(c, i) {
       rating: (3.2 + r() * 1.7).toFixed(1),
       priorComplaints: Math.floor(r() * 6),
     },
-    ai: buildAi(r, c.type, c.category),
+    ai: withRetrievedRecording(buildAi(r, c.type, c.category), c.id, c.receivedAt),
     aiVerified: true,
     incomplete: false,
-    evidence: [
+    // One case carries real footage; the rest draw on the shared frame pool.
+    evidence: caseEvidence(c.id, c.receivedAt) ?? [
       { kind: "image", label: "In-cab camera still", time: c.receivedAt, frame: frameFor("In-cab camera still", i) },
       { kind: "image", label: "Forward road view", time: c.receivedAt, frame: frameFor("Forward road view", i) },
       { kind: "video", label: "Trip recording", time: c.receivedAt, frame: frameFor("Trip recording", i) },

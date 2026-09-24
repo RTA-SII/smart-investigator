@@ -22,13 +22,15 @@ import { COMPLAINTS, NOW } from "@/data/complaints"
  * was renamed to `Confirmed`. The version is in the key, and older keys are
  * swept on load, so that cannot happen silently again.
  */
-const DATA_VERSION = 5
+const DATA_VERSION = 7
 const KEY = `smc-complaints-data.v${DATA_VERSION}`
 const LEGACY_KEYS = [
   "smc-complaints-data",
   "smc-complaints-data.v2",
   "smc-complaints-data.v3",
   "smc-complaints-data.v4",
+  "smc-complaints-data.v5",
+  "smc-complaints-data.v6",
 ]
 
 /**
