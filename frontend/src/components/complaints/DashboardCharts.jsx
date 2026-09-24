@@ -13,12 +13,13 @@ import { RechartsTip } from "@/components/charts/ChartTip"
 import { Pie3D } from "@/components/charts/Pie3D"
 import { Bar3D } from "@/components/charts/Bar3D"
 import { NOW } from "@/data/complaints"
+import { closedAt } from "@/lib/cht"
 import {
   CATEGORIES,
+  CHANNELS,
   MODES,
   OUTCOMES,
   OUTCOME_TONE,
-  VERDICT_TONE,
 } from "@/data/catalog"
 import { useT } from "@/i18n"
 
@@ -28,6 +29,9 @@ const TONE = {
   low: "var(--tone-low)",
   neutral: "var(--tone-neutral)",
 }
+
+/** One colour per intake channel, in the order the catalog lists them. */
+const SOURCE_COLORS = ["var(--chart-1)", "#009cde", "#ff8200", "var(--tone-low)"]
 
 /** One colour per transport mode, held apart from the chart-N ramp. */
 const MODE_COLORS = [
@@ -75,50 +79,60 @@ function ChartCard({ title, hint, legend, children }) {
   )
 }
 
-/** Daily complaint volume, split into confirmed vs everything else. */
+/**
+ * Arrivals against closures, day by day.
+ *
+ * The question an officer actually has of a trend line is whether they are
+ * keeping up — work coming in against work going out. What the engine
+ * concluded is a property of each case, not something a time series says
+ * anything useful about.
+ */
 export function VolumeTrend({ rows, days }) {
   const data = useMemo(() => {
+    const key = (d) => `${d.getDate()}/${d.getMonth() + 1}`
     const buckets = new Map()
+
     for (let i = days - 1; i >= 0; i--) {
       const d = new Date(NOW.getTime() - i * 86_400_000)
-      const key = `${d.getDate()}/${d.getMonth() + 1}`
-      buckets.set(key, { day: key, Confirmed: 0, "Not confirmed": 0 })
+      buckets.set(key(d), { day: key(d), Received: 0, Closed: 0 })
     }
+
     for (const c of rows) {
-      const d = new Date(c.receivedAt)
-      const b = buckets.get(`${d.getDate()}/${d.getMonth() + 1}`)
-      if (!b) continue
-      if (c.ai.verdict === "Confirmed") b.Confirmed += 1
-      else b["Not confirmed"] += 1
+      const inbox = buckets.get(key(new Date(c.receivedAt)))
+      if (inbox) inbox.Received += 1
+
+      const done = closedAt(c)
+      const settled = done && buckets.get(key(done))
+      if (settled) settled.Closed += 1
     }
     return [...buckets.values()]
   }, [rows, days])
 
   const totals = data.reduce(
-    (a, d) => ({ s: a.s + d.Confirmed, o: a.o + d["Not confirmed"] }),
-    { s: 0, o: 0 },
+    (a, d) => ({ received: a.received + d.Received, closed: a.closed + d.Closed }),
+    { received: 0, closed: 0 },
   )
 
   return (
     <ChartCard
-      title="Complaint Volume by AI Verdict"
-      hint="Daily complaints received in this period, split by what cross-validation concluded. Counts complaints, not drivers."
+      title="Complaints Received vs Closed"
+      hint="Work arriving against work settled, day by day. The two lines tracking each other means the queue is holding; received running above closed means it is growing."
       legend={[
-        { label: "Confirmed", color: "var(--tone-critical)", value: totals.s },
-        { label: "Not confirmed", color: "var(--chart-1)", value: totals.o },
+        { label: "Received", color: "var(--chart-1)", value: totals.received },
+        { label: "Closed", color: "var(--tone-low)", value: totals.closed },
       ]}
     >
       <div className="h-[260px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
             <defs>
-              <linearGradient id="gSub" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--tone-critical)" stopOpacity={0.35} />
-                <stop offset="100%" stopColor="var(--tone-critical)" stopOpacity={0.02} />
-              </linearGradient>
-              <linearGradient id="gOth" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="gIn" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.3} />
                 <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0.02} />
+              </linearGradient>
+              <linearGradient id="gOut" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--tone-low)" stopOpacity={0.35} />
+                <stop offset="100%" stopColor="var(--tone-low)" stopOpacity={0.02} />
               </linearGradient>
             </defs>
             <XAxis dataKey="day" tick={AXIS} tickLine={false} axisLine={false} />
@@ -129,18 +143,18 @@ export function VolumeTrend({ rows, days }) {
             />
             <Area
               type="monotone"
-              dataKey="Not confirmed"
+              dataKey="Received"
               stroke="var(--chart-1)"
               strokeWidth={2}
-              fill="url(#gOth)"
+              fill="url(#gIn)"
               activeDot={{ r: 4, strokeWidth: 2, stroke: "#fff" }}
             />
             <Area
               type="monotone"
-              dataKey="Confirmed"
-              stroke="var(--tone-critical)"
+              dataKey="Closed"
+              stroke="var(--tone-low)"
               strokeWidth={2}
-              fill="url(#gSub)"
+              fill="url(#gOut)"
               activeDot={{ r: 4, strokeWidth: 2, stroke: "#fff" }}
             />
           </AreaChart>
@@ -174,23 +188,23 @@ export function CategorySplit({ rows }) {
   )
 }
 
-/** How the cross-validation engine ruled across the range. */
-export function VerdictBreakdown({ rows }) {
+/** Which channel the public actually reports through. */
+export function SourceSplit({ rows }) {
   const t = useT()
   const data = useMemo(
     () =>
-      ["Confirmed", "Inconclusive", "False Positive"].map((name) => ({
+      CHANNELS.map((name, i) => ({
         name,
-        value: rows.filter((c) => c.ai.verdict === name).length,
-        color: TONE[VERDICT_TONE[name]],
-      })),
+        value: rows.filter((c) => c.channel === name).length,
+        color: SOURCE_COLORS[i % SOURCE_COLORS.length],
+      })).filter((d) => d.value > 0),
     [rows],
   )
 
   return (
     <ChartCard
-      title="AI Verdict Breakdown"
-      hint="Share of complaints by cross-validation outcome. Inconclusive means the signals conflicted, not that the complaint was rejected."
+      title="Complaints by Source"
+      hint="Where complaints reached the centre from. Walk-in is the one channel the Investigation Office logs itself; the rest arrive through CRM."
       legend={data.map((d) => ({ label: d.name, color: d.color, value: d.value }))}
     >
       <Pie3D data={data.map((d) => ({ ...d, name: t(d.name) }))} />

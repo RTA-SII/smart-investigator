@@ -7,7 +7,7 @@ import { MyProductivity } from "@/components/complaints/MyProductivity"
 import {
   VolumeTrend,
   CategorySplit,
-  VerdictBreakdown,
+  SourceSplit,
   ModeSplit,
   ActionSplit,
 } from "@/components/complaints/DashboardCharts"
@@ -169,7 +169,7 @@ export function Dashboard() {
       <div className="grid gap-4">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
           <VolumeTrend rows={charted} days={days} />
-          <VerdictBreakdown rows={charted} />
+          <SourceSplit rows={charted} />
         </div>
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
           <ModeSplit rows={charted} />

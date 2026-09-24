@@ -27,7 +27,7 @@ export function TH({ className, children }) {
   return (
     <th
       className={cn(
-        "px-2 py-2.5 pl-4 text-left text-[10px] font-semibold tracking-[0.5px] uppercase",
+        "px-2 py-2.5 ps-4 text-start text-[10px] font-semibold tracking-[0.5px] uppercase",
         "text-[var(--muted-foreground)] whitespace-nowrap",
         className,
       )}
@@ -54,5 +54,5 @@ export function TR({ className, onClick, children }) {
 }
 
 export function TD({ className, children }) {
-  return <td className={cn("px-2 py-4 pl-4 align-middle", className)}>{children}</td>
+  return <td className={cn("px-2 py-4 ps-4 align-middle", className)}>{children}</td>
 }

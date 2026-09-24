@@ -98,7 +98,7 @@ export function ManualComplaints() {
               <TH>Stage</TH>
               <TH>Received</TH>
               <TH>Assigned To</TH>
-              <TH className="pe-4 text-end">Action</TH>
+              <TH className="pe-4">Action</TH>
             </THead>
             <tbody>
               {paged.page.map((c) => {

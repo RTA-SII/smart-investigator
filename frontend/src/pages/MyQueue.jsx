@@ -69,7 +69,11 @@ export function MyQueue() {
       />
 
       <Card className="overflow-hidden">
-        <ComplaintTable rows={rows} emptyLabel={t("Nothing assigned to you in this scope")} />
+        <ComplaintTable
+          rows={rows}
+          verdict={false}
+          emptyLabel={t("Nothing assigned to you in this scope")}
+        />
       </Card>
     </>
   )

@@ -10,8 +10,12 @@ import { Pagination } from "@/components/ui/Pagination"
 import { AssignPicker } from "@/components/complaints/AssignPicker"
 import { modeIcon } from "@/components/complaints/modeIcons"
 
-/** `assignable` adds SMC's Assigned To column — the supervisor's to use. */
-export function ComplaintTable({ rows, emptyLabel, assignable = false }) {
+/**
+ * `assignable` adds SMC's Assigned To column — the supervisor's to use.
+ * `verdict` drops the AI column: an officer working their own list already
+ * knows what the engine said, and the width is better spent on the case.
+ */
+export function ComplaintTable({ rows, emptyLabel, assignable = false, verdict = true }) {
   const navigate = useNavigate()
   const t = useT()
   const paged = usePaged(rows)
@@ -35,9 +39,9 @@ export function ComplaintTable({ rows, emptyLabel, assignable = false }) {
         <TH>{t("Company")}</TH>
         <TH>{t("Priority")}</TH>
         <TH>{t("Stage")}</TH>
-        <TH>{t("AI Verdict")}</TH>
+        {verdict && <TH>{t("AI Verdict")}</TH>}
         <TH>{t("SLA")}</TH>
-        <TH>{t("Received")}</TH>
+        <TH>{t("Received At")}</TH>
         {assignable && <TH>{t("Assigned To")}</TH>}
       </THead>
       <tbody>
@@ -85,14 +89,16 @@ export function ComplaintTable({ rows, emptyLabel, assignable = false }) {
               <TD>
                 <Badge tone={STAGE_TONE[c.stage]}>{t(c.stage)}</Badge>
               </TD>
-              <TD>
-                <span className="whitespace-nowrap">
-                  <span className="text-[13px] font-semibold">{t(c.ai.verdict)}</span>
-                  <span className="ms-1.5 text-[11px] text-[var(--muted-foreground)]">
-                    {c.ai.confidence}%
+              {verdict && (
+                <TD>
+                  <span className="whitespace-nowrap">
+                    <span className="text-[13px] font-semibold">{t(c.ai.verdict)}</span>
+                    <span className="ms-1.5 text-[11px] text-[var(--muted-foreground)]">
+                      {c.ai.confidence}%
+                    </span>
                   </span>
-                </span>
-              </TD>
+                </TD>
+              )}
               <TD>
                 <SlaClock complaint={c} />
               </TD>

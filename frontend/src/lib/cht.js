@@ -43,3 +43,19 @@ export const OFF_DESK = ["Closed", "Escalated", "Returned"]
  */
 export const isOpenFor = (c, officerId) =>
   c.assignee?.id === officerId && !OFF_DESK.includes(c.stage)
+
+/**
+ * When a complaint was settled.
+ *
+ * A ruling made in session stamps its own time, RTA's own cases carry
+ * theirs, and a generated row has only its handling time — which is the
+ * same fact written as a duration rather than an instant.
+ */
+export function closedAt(c) {
+  if (c.stage !== "Closed") return null
+  if (c.decision?.at) return new Date(c.decision.at)
+  if (c.resolvedAt) return new Date(c.resolvedAt)
+  if (c.handlingMinutes != null)
+    return new Date(new Date(c.receivedAt).getTime() + c.handlingMinutes * 60_000)
+  return new Date(c.receivedAt)
+}
