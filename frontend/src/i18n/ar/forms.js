@@ -113,6 +113,8 @@ export const forms = {
   // The date picker and the form's own dropdowns.
   "Select date and time": "اختر التاريخ والوقت",
   Time: "الوقت",
+  Hour: "الساعة",
+  Minute: "الدقيقة",
   "Previous month": "الشهر السابق",
   "Next month": "الشهر التالي",
   January: "يناير",

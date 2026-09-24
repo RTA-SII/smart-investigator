@@ -125,7 +125,7 @@ export function SelectMenu({
                       "transition-colors duration-150",
                       on
                         ? "bg-[rgb(23_28_143/0.1)] text-[var(--primary)]"
-                        : "hover:bg-white/60 dark:hover:bg-white/10",
+                        : "hover:bg-[rgb(23_28_143/0.06)] dark:hover:bg-white/10",
                     )}
                   >
                     {Icon && (

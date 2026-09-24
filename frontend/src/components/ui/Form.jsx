@@ -91,7 +91,7 @@ export function Lookup({ onLookup, className, ...rest }) {
         className={cn(
           "absolute inset-y-1 end-1 inline-flex items-center gap-1.5 rounded-md px-3",
           "text-xs font-medium text-[var(--muted-foreground)]",
-          "transition-colors duration-150 hover:bg-white/60 hover:text-[var(--foreground)]",
+          "transition-colors duration-150 hover:bg-[rgb(23_28_143/0.06)] hover:text-[var(--foreground)]",
           "dark:hover:bg-white/10",
         )}
       >

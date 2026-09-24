@@ -56,7 +56,7 @@ export function EscalationPanel({ filters, onChange }) {
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-label={t("Toggle escalation filters")}
-          className="ms-auto grid size-7 place-items-center rounded-lg text-[var(--muted-foreground)] transition-colors duration-150 hover:bg-white/60 dark:hover:bg-white/10"
+          className="ms-auto grid size-7 place-items-center rounded-lg text-[var(--muted-foreground)] transition-colors duration-150 hover:bg-[rgb(23_28_143/0.06)] dark:hover:bg-white/10"
         >
           <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} />
         </button>
@@ -175,7 +175,7 @@ function Boxes({ options, value, onChange, filled = false }) {
               "flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs transition-colors duration-150",
               filled && on
                 ? "bg-[var(--accent)] font-semibold text-[var(--primary)]"
-                : "hover:bg-white/60 dark:hover:bg-white/10",
+                : "hover:bg-[rgb(23_28_143/0.06)] dark:hover:bg-white/10",
             )}
           >
             <Checkbox on={on} />

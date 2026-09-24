@@ -38,7 +38,7 @@ export function AssignPicker({ complaint }) {
         className={cn(
           "inline-flex h-8 max-w-[190px] items-center gap-2 rounded-lg px-2",
           "text-[13px] whitespace-nowrap transition-colors duration-150",
-          "hover:bg-white/60 dark:hover:bg-white/10",
+          "hover:bg-[rgb(23_28_143/0.06)] dark:hover:bg-white/10",
         )}
       >
         {assignee ? (
@@ -154,7 +154,7 @@ function Popover({ complaint, onClose }) {
                   }}
                   className={cn(
                     "flex w-full items-center gap-2.5 px-2.5 py-2 text-start transition-colors duration-150",
-                    mine ? "bg-[var(--accent)]" : "hover:bg-white/60 dark:hover:bg-white/10",
+                    mine ? "bg-[var(--accent)]" : "hover:bg-[rgb(23_28_143/0.06)] dark:hover:bg-white/10",
                   )}
                 >
                   <Avatar name={o.name} tint={o.tint} />
@@ -216,7 +216,7 @@ function Pill({ active, onClick, children }) {
         "transition-colors duration-150",
         active
           ? "bg-[rgb(23_28_143/0.15)] text-[var(--primary)]"
-          : "text-[var(--muted-foreground)] hover:bg-white/60 dark:hover:bg-white/10",
+          : "text-[var(--muted-foreground)] hover:bg-[rgb(23_28_143/0.06)] dark:hover:bg-white/10",
       )}
     >
       {children}

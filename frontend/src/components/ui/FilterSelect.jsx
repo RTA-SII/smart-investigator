@@ -100,7 +100,7 @@ export function FilterSelect({ label, value = [], options, onChange, icon }) {
                         "transition-colors duration-150",
                         on
                           ? "bg-[rgb(23_28_143/0.1)] text-[var(--primary)]"
-                          : "hover:bg-white/60 dark:hover:bg-white/10",
+                          : "hover:bg-[rgb(23_28_143/0.06)] dark:hover:bg-white/10",
                       )}
                     >
                       <Checkbox on={on} />
@@ -121,7 +121,7 @@ export function FilterSelect({ label, value = [], options, onChange, icon }) {
               <button
                 type="button"
                 onClick={() => onChange([])}
-                className="w-full border-t border-[rgb(0_0_0/0.06)] px-3 py-2 text-start text-xs text-[var(--muted-foreground)] transition-colors duration-150 hover:bg-white/60 dark:hover:bg-white/10"
+                className="w-full border-t border-[rgb(0_0_0/0.06)] px-3 py-2 text-start text-xs text-[var(--muted-foreground)] transition-colors duration-150 hover:bg-[rgb(23_28_143/0.06)] dark:hover:bg-white/10"
               >
                 {t("Clear")}
               </button>

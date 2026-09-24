@@ -151,7 +151,7 @@ export function DateTimeField({ value, onChange, placeholder, className }) {
                     "transition-colors duration-150",
                     on
                       ? "bg-[var(--primary)] font-semibold text-white"
-                      : "hover:bg-[rgb(23_28_143/0.08)]",
+                      : "hover:bg-[rgb(23_28_143/0.08)] dark:hover:bg-white/10",
                     !on &&
                       outside &&
                       "text-[var(--muted-foreground)] opacity-55",
@@ -166,23 +166,91 @@ export function DateTimeField({ value, onChange, placeholder, className }) {
             })}
           </div>
 
-          <div className="flex items-center gap-2 border-t border-[rgb(0_0_0/0.06)] px-3 py-2.5">
-            <Clock className="size-4 shrink-0 text-[var(--muted-foreground)]" />
-            <span className="flex-1 text-[11px] font-semibold tracking-[0.5px] text-[var(--muted-foreground)] uppercase">
-              {t("Time")}
-            </span>
-            <input
-              type="time"
-              value={time || "09:00"}
-              onChange={(e) => setTime(e.target.value)}
-              aria-label={t("Time")}
-              className="h-8 rounded-lg border border-[var(--input)] bg-transparent px-2 text-[13px] outline-none focus-visible:border-[var(--ring)]"
-            />
-          </div>
+          <TimeRow value={time || "09:00"} onChange={setTime} />
         </div>
       )}
     </span>
   );
+}
+
+/**
+ * Hours and minutes as two scrolling columns.
+ *
+ * `<input type="time">` opens the browser's own clock popover, which is a
+ * different shape and a different set of colours from everything around it —
+ * the one thing this picker exists to avoid. These are the same rows as the
+ * calendar above them, in the same colours.
+ */
+function TimeRow({ value, onChange }) {
+  const t = useT()
+  const [hh, mm] = value.split(":")
+
+  return (
+    <div className="border-t border-[rgb(0_0_0/0.06)] px-3 py-2.5">
+      <p className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold tracking-[0.5px] text-[var(--muted-foreground)] uppercase">
+        <Clock className="size-3.5 shrink-0" />
+        {t("Time")}
+        <span className="ltr-value ms-auto font-mono text-[13px] font-bold normal-case tracking-normal text-[var(--foreground)]">
+          {value}
+        </span>
+      </p>
+
+      <div className="flex gap-2">
+        <Wheel
+          label={t("Hour")}
+          count={24}
+          value={hh}
+          onChange={(v) => onChange(`${v}:${mm}`)}
+        />
+        <Wheel
+          label={t("Minute")}
+          count={60}
+          value={mm}
+          onChange={(v) => onChange(`${hh}:${v}`)}
+        />
+      </div>
+    </div>
+  )
+}
+
+/** One column, scrolled so the chosen value is in view when it opens. */
+function Wheel({ label, count, value, onChange }) {
+  const scroll = (el) => {
+    // A ref callback rather than an effect: the list only mounts when the
+    // popover opens, which is exactly when it needs positioning.
+    el?.querySelector('[data-on="true"]')?.scrollIntoView({ block: "center" })
+  }
+
+  return (
+    <ul
+      ref={scroll}
+      aria-label={label}
+      className="max-h-[108px] flex-1 overflow-y-auto rounded-lg border border-[var(--input)] p-1"
+    >
+      {Array.from({ length: count }, (_, i) => {
+        const v = String(i).padStart(2, "0")
+        const on = v === value
+        return (
+          <li key={v}>
+            <button
+              type="button"
+              data-on={on}
+              onClick={() => onChange(v)}
+              className={cn(
+                "ltr-value flex h-7 w-full items-center justify-center rounded-[6.4px] font-mono text-[13px]",
+                "transition-colors duration-150",
+                on
+                  ? "bg-[var(--primary)] font-semibold text-white"
+                  : "hover:bg-[rgb(23_28_143/0.06)] dark:hover:bg-white/10",
+              )}
+            >
+              {v}
+            </button>
+          </li>
+        )
+      })}
+    </ul>
+  )
 }
 
 function Arrow({ label, onClick, children }) {
