@@ -1,4 +1,5 @@
 import { Bell, ClipboardList, LayoutDashboard, CirclePlus } from "lucide-react"
+import { isOpenFor } from "@/lib/cht"
 
 /**
  * Nav for this module only — no other SMC modules appear. The shape follows
@@ -7,10 +8,12 @@ import { Bell, ClipboardList, LayoutDashboard, CirclePlus } from "lucide-react"
  * the two cannot drift.
  */
 export function navSections(role, complaints) {
+  // Estate-wide, anything unsettled is outstanding — a returned case is
+  // still somebody's problem. On the officer's own badge it is not: their
+  // count is what they can act on, the same rule the arrival scheduler and
+  // My Productivity use.
   const openCount = complaints.filter((c) => c.stage !== "Closed").length
-  const mineCount = complaints.filter(
-    (c) => c.assignee?.id === role.staff.code && c.stage !== "Closed",
-  ).length
+  const mineCount = complaints.filter((c) => isOpenFor(c, role.staff.code)).length
 
   const work = [
     { to: "/my-queue", label: "My Complaints", icon: Bell, count: mineCount },

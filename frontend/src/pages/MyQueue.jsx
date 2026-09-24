@@ -9,6 +9,7 @@ import { useComplaints } from "@/app/complaintStore"
 import { roleById } from "@/data/personas"
 import { useSession } from "@/app/session"
 import { applyFilters, EMPTY_FILTERS } from "@/lib/filters"
+import { isOpenFor } from "@/lib/cht"
 import { useT } from "@/i18n"
 
 const SCOPES = [
@@ -64,7 +65,7 @@ export function MyQueue() {
         filters={filters}
         onChange={setFilters}
         count={rows.length}
-        open={rows.filter((c) => c.stage !== "Closed").length}
+        open={rows.filter((c) => isOpenFor(c, role.staff.code)).length}
       />
 
       <Card className="overflow-hidden">

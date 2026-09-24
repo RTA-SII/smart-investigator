@@ -4,10 +4,10 @@ import {
   CircleCheck,
   Clock,
   Inbox,
-  ShieldCheck,
   SlidersHorizontal,
   TrendingUp,
   TriangleAlert,
+  Undo2,
 } from "lucide-react"
 import { Card } from "@/components/ui/Card"
 import { Meter } from "@/components/ui/Meter"
@@ -15,6 +15,7 @@ import { InfoTip } from "@/components/ui/InfoTip"
 import { useComplaints } from "@/app/complaintStore"
 import { initials } from "@/lib/format"
 import { wasEscalated } from "@/lib/filters"
+import { OFF_DESK } from "@/lib/cht"
 import { useT } from "@/i18n"
 import { cn } from "@/lib/cn"
 
@@ -34,7 +35,10 @@ export function MyProductivity({ role }) {
   const stats = useMemo(() => {
     const mine = complaints.filter((c) => c.assignee?.id === code)
     const closed = mine.filter((c) => c.stage === "Closed")
-    const open = mine.filter((c) => c.stage !== "Closed")
+    // What is actually theirs to act on — the same rule the nav count and
+    // the arrival scheduler use, so "unactioned" cannot mean one thing here
+    // and another in the sidebar.
+    const open = mine.filter((c) => !OFF_DESK.includes(c.stage))
 
     const timed = closed.filter((c) => c.handlingMinutes != null)
     const avg = timed.length
@@ -45,7 +49,10 @@ export function MyProductivity({ role }) {
       assigned: mine.length,
       active: open.length,
       handled: closed.length,
-      closeRate: mine.length ? Math.round((closed.length / mine.length) * 100) : 0,
+      // Sent back to Customer Happiness for the missing detail. Not the
+      // officer's failure and not their work any more, but still on their
+      // name until the detail comes back.
+      returned: mine.filter((c) => c.stage === "Returned").length,
       avg,
       escalated: mine.filter(wasEscalated).length,
       unactioned: open.length,
@@ -55,7 +62,7 @@ export function MyProductivity({ role }) {
 
   const tiles = [
     {
-      label: "Assigned to me",
+      label: "Total Assigned",
       value: stats.assigned,
       caption: `${stats.active} ${t("still active")}`,
       meter: 100,
@@ -64,22 +71,22 @@ export function MyProductivity({ role }) {
       hint: t("Every complaint that has carried your name, open or closed."),
     },
     {
-      label: "Handled",
+      label: "Closed",
       value: stats.handled,
-      caption: t("Closed by you"),
+      caption: t("Ruled on by you"),
       meter: pct(stats.handled, stats.assigned),
       tone: "var(--tone-low)",
       icon: CircleCheck,
       hint: t("Complaints you have ruled on and filed."),
     },
     {
-      label: "Close rate",
-      value: `${stats.closeRate}%`,
-      caption: t("Of everything assigned"),
-      meter: stats.closeRate,
-      tone: "var(--tone-low)",
-      icon: ShieldCheck,
-      hint: t("Closed as a share of assigned. Escalated work is not yours to close."),
+      label: "Returned",
+      value: stats.returned,
+      caption: t("Sent back for missing detail"),
+      meter: pct(stats.returned, stats.assigned),
+      tone: "var(--tone-medium)",
+      icon: Undo2,
+      hint: t("Returned to Customer Happiness because an essential detail was missing."),
     },
     {
       label: "Avg handling time",

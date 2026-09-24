@@ -19,7 +19,13 @@ export const pages = {
     "موزّعة على الشكاوى المُسندة إليك",
   "Broken down across every complaint in range":
     "موزّعة على كل الشكاوى ضمن الفترة",
-  "Not yet ruled on": "لم يُبتّ فيها بعد",
+  Returned: "مُعادة",
+  "Total Assigned": "إجمالي المُسند",
+  Closed: "مغلقة",
+  "Ruled on by you": "بتَتَ فيها",
+  "Sent back for missing detail": "أُعيدت لنقص البيانات",
+  "Returned to Customer Happiness because an essential detail was missing.":
+    "أُعيدت إلى سعادة المتعاملين لنقص بيان أساسي.",
   "SLA Breached": "تجاوز المدة",
   "Avg Handling": "متوسط المعالجة",
 

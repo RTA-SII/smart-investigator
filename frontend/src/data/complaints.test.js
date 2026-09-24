@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { COMPLAINTS, complaintById, NOW } from "./complaints"
 import { OUTCOMES, PRIORITIES, STAGES } from "./catalog"
-import { isQueued } from "@/lib/cht"
+import { isQueued, OFF_DESK } from "@/lib/cht"
 import { wasEscalated } from "@/lib/filters"
 import { isManual } from "./catalog"
 import { ROLES } from "./personas"
@@ -44,10 +44,27 @@ describe("the complaint dataset", () => {
     }
   })
 
-  it("records an outcome exactly on the closed complaints", () => {
+  it("records a finding on every case that has one, and no other", () => {
+    // A finding is not the same thing as a closure: a case returned to
+    // Customer Happiness carries "Essential Information Missing" while it is
+    // very much still alive. Work not yet ruled on carries nothing.
+    const settled = ["Closed", "Returned"]
+
     for (const c of COMPLAINTS) {
-      if (c.stage === "Closed") expect(c.outcome).toBeTruthy()
-      else expect(c.outcome).toBeNull()
+      if (settled.includes(c.stage)) expect(c.outcome, c.id).toBeTruthy()
+      else expect(c.outcome, c.id).toBeNull()
+    }
+  })
+
+  it("returns cases only because an essential detail is missing", () => {
+    const returned = COMPLAINTS.filter((c) => c.stage === "Returned")
+
+    expect(returned.length).toBeGreaterThan(0)
+    for (const c of returned) {
+      expect(c.outcome, c.id).toBe("Essential Information Missing")
+      // The gate and the stage cannot disagree — it was returned *because*
+      // the case could not be worked.
+      expect(c.incomplete, c.id).toBe(true)
     }
   })
 
@@ -168,14 +185,15 @@ describe("manually logged complaints", () => {
   })
 
   it("hands the signed-in officer a history but never live work", () => {
-    // Signing in onto a blank page reads as a broken demo, so their closed
-    // work is seeded. Open work is not: their desk has to be clear or the
-    // first arrival never fires.
+    // Signing in onto a blank page reads as a broken demo, so their settled
+    // work is seeded. Work still theirs to act on is not: the desk has to be
+    // clear or the first arrival never fires.
     const code = ROLES[0].staff.code
     const mine = COMPLAINTS.filter((c) => c.assignee?.id === code)
 
     expect(mine.length).toBeGreaterThan(3)
-    expect(mine.every((c) => c.stage === "Closed")).toBe(true)
+    expect(mine.every((c) => OFF_DESK.includes(c.stage))).toBe(true)
+    expect(mine.some((c) => c.stage === "Closed")).toBe(true)
   })
 })
 

@@ -10,7 +10,7 @@ const ROW = {
   company: "Hala",
   priority: "Medium",
   stage: "New",
-  channel: "Email",
+  channel: "E-mail",
   type: "Unsafe Lane Change",
   assignee: { id: "SMC-0318", name: "Layla Al-Hammadi" },
   driver: { name: "Ravi Shah" },
@@ -27,6 +27,7 @@ const rows = [
     crmRef: "CRM-2026-990001",
     plate: "M70001",
     company: "Dubai Taxi",
+    channel: "Phone",
     assignee: null,
   },
 ]
@@ -37,7 +38,7 @@ describe("applyFilters", () => {
   })
 
   it("narrows by an exact facet match", () => {
-    const out = applyFilters(rows, { ...EMPTY_FILTERS, company: ["Hala"] })
+    const out = applyFilters(rows, { ...EMPTY_FILTERS, channel: ["E-mail"] })
     expect(out.map((r) => r.id)).toEqual(["CMP-041256"])
   })
 
@@ -57,25 +58,33 @@ describe("applyFilters", () => {
     expect(applyFilters(rows, { ...EMPTY_FILTERS, q: "  RAVI  " })).toHaveLength(2)
   })
 
-  it("does not throw on an unassigned complaint when filtering by officer", () => {
-    const out = applyFilters(rows, { ...EMPTY_FILTERS, officer: ["Layla Al-Hammadi"] })
-    expect(out.map((r) => r.id)).toEqual(["CMP-041256"])
+  it("offers exactly the facets the filter bar can set", () => {
+    // A facet in the engine that no control sets is dead weight, and a
+    // control with no facet behind it silently does nothing.
+    expect(Object.keys(EMPTY_FILTERS).filter((k) => !k.startsWith("escalat"))).toEqual([
+      "q",
+      "type",
+      "mode",
+      "priority",
+      "stage",
+      "channel",
+    ])
   })
 
   it("combines facets", () => {
     const out = applyFilters(rows, {
       ...EMPTY_FILTERS,
-      company: ["Hala"],
+      channel: ["E-mail"],
       priority: ["High"],
     })
     expect(out).toHaveLength(0)
   })
 
   it("is multi-select — a facet widens as values are added", () => {
-    const one = applyFilters(rows, { ...EMPTY_FILTERS, company: ["Hala"] })
+    const one = applyFilters(rows, { ...EMPTY_FILTERS, channel: ["E-mail"] })
     const both = applyFilters(rows, {
       ...EMPTY_FILTERS,
-      company: ["Hala", "Dubai Taxi"],
+      channel: ["E-mail", "Phone"],
     })
     expect(one).toHaveLength(1)
     expect(both).toHaveLength(2)

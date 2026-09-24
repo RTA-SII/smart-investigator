@@ -1,15 +1,10 @@
 export const EMPTY_FILTERS = {
   q: "",
+  type: [],
   mode: [],
-  company: [],
   priority: [],
   stage: [],
   channel: [],
-  type: [],
-  officer: [],
-  caseType: [],
-  outcome: [],
-  actionTaken: [],
   // Escalation facets, which SMC exposes only once Stage is Escalated.
   escalatedByRole: [],
   escalatedBy: [],
@@ -53,16 +48,11 @@ const hits = (facet, value) => !facet.length || facet.includes(value)
 export function applyFilters(rows, f) {
   const q = f.q.trim().toLowerCase()
   return rows.filter((c) => {
+    if (!hits(f.type, c.type)) return false
     if (!hits(f.mode, c.mode)) return false
-    if (!hits(f.company, c.company)) return false
     if (!hits(f.priority, c.priority)) return false
     if (!matchesStage(c, f.stage)) return false
     if (!hits(f.channel, c.channel)) return false
-    if (!hits(f.type, c.type)) return false
-    if (!hits(f.officer, c.assignee?.name)) return false
-    if (!hits(f.caseType, c.caseType)) return false
-    if (!hits(f.outcome, c.outcome)) return false
-    if (!hits(f.actionTaken, c.form?.actionTaken)) return false
     if (!matchesEscalation(c, f)) return false
     if (!q) return true
     return [

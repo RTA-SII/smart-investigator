@@ -9,6 +9,7 @@ import {
   PRIORITIES,
 } from "./catalog"
 import { OFFICERS, SEED_OFFICERS } from "./personas"
+import { OFF_DESK } from "@/lib/cht"
 import { buildAi } from "./crossValidation"
 import { DRIVER_FIRST, DRIVER_LAST, FIRST, LAST } from "./names"
 import { frameFor } from "./evidenceFrames"
@@ -144,6 +145,10 @@ function buildOne(i, fresh = false) {
     const roll = r()
     stage = roll < 0.4 ? "Closed" : roll < 0.7 ? "Assigned" : "Under Investigation"
   } else if (r() < 0.16) stage = "Escalated"
+  // Sent back to Customer Happiness because an essential detail was missing.
+  // Seeded rather than left to arise in session: two KPIs count returns, and
+  // a KPI that can only ever read zero tells nobody anything.
+  else if (r() < 0.12) stage = "Returned"
   else stage = "Closed"
 
   const ai = buildAi(r, type, category)
@@ -151,7 +156,9 @@ function buildOne(i, fresh = false) {
   // RTA's verified findings, and the action that follows from each.
   let outcome = null
   let penalty = null
-  if (stage === "Closed") {
+  if (stage === "Returned") {
+    outcome = "Essential Information Missing"
+  } else if (stage === "Closed") {
     if (ai.verdict === "Confirmed") {
       outcome = "Valid Complaint - Guilty"
       penalty =
@@ -168,8 +175,6 @@ function buildOne(i, fresh = false) {
     }
   }
 
-  // Closed work can carry the signed-in officer's name; anything still open
-  // cannot, or their desk is not clear at sign-in and no arrival ever fires.
   // How long the officer took, in minutes. Seeded rows were never actually
   // worked, so theirs is generated — but it lives in the same field a real
   // ruling writes to, and every "how long does this take" figure in the app
@@ -177,10 +182,13 @@ function buildOne(i, fresh = false) {
   const handlingMinutes =
     stage === "Closed" ? Number((1.4 + r() * 5.2).toFixed(1)) : null
 
+  // Work that is off the officer's desk can carry the signed-in officer's
+  // name; anything still theirs to act on cannot, or their desk is not clear
+  // at sign-in and no arrival ever fires.
   const assignee =
     stage === "New"
       ? null
-      : pick(r, stage === "Closed" ? OFFICERS : SEED_OFFICERS)
+      : pick(r, OFF_DESK.includes(stage) ? OFFICERS : SEED_OFFICERS)
 
   const complaint = {
     id: `CMP-${String(41_200 + i).padStart(6, "0")}`,
@@ -230,7 +238,7 @@ function buildOne(i, fresh = false) {
   // The completeness gate (deck slide 2): a case cannot be worked without a
   // date, a time, a side or plate number, and a description. Roughly one in
   // eight arrives short, so the gate is demonstrable.
-  complaint.incomplete = !fresh && r() < 0.12
+  complaint.incomplete = stage === "Returned" || (!fresh && r() < 0.12)
   if (complaint.incomplete) complaint.sideNumber = null
 
   complaint.form = buildForm(r, complaint)

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { Calendar, CheckCircle2, Clock, Inbox, Layers, ShieldAlert, Timer } from "lucide-react"
+import { Calendar, CheckCircle2, Clock, Layers, ShieldAlert, Timer, Undo2 } from "lucide-react"
 import { PageHeader, SectionHeader } from "@/components/shell/PageHeader"
 import { Segmented } from "@/components/ui/Segmented"
 import { KpiTile } from "@/components/complaints/KpiTile"
@@ -105,18 +105,17 @@ export function Dashboard() {
           hint="All complaints ingested from CRM in this range"
         />
         {/* No delta on this one. Every other tile compares volume against
-            the window before it, which is like for like. "Open" is a state
-            read today, so the earlier window holds only the stragglers that
-            never closed — comparing the two shows a vast rise on any healthy
-            week. */}
+            the window before it, which is like for like; returns are a state
+            read today, and the earlier window holds only the ones that never
+            came back. */}
         <KpiTile
-          label={t("Open")}
-          value={num(k.open)}
-          caption={t("Not yet ruled on")}
-          meter={pct(k.open, k.total)}
-          tone="var(--tone-critical)"
-          icon={Inbox}
-          hint="Not yet closed"
+          label={t("Returned")}
+          value={num(k.returned)}
+          caption={t("Sent back for missing detail")}
+          meter={pct(k.returned, k.total)}
+          tone="var(--tone-medium)"
+          icon={Undo2}
+          hint="Returned to Customer Happiness because an essential detail was missing"
         />
         <KpiTile
           label={t("Closed")}
@@ -209,6 +208,7 @@ function stats(rows) {
   const total = rows.length
   const closed = rows.filter((c) => c.stage === "Closed").length
   const escalated = rows.filter((c) => c.stage === "Escalated").length
+  const returned = rows.filter((c) => c.stage === "Returned").length
   const open = total - closed
   // A complaint breaches if it is still open past its five-minute target.
   const breached = rows.filter(
@@ -222,5 +222,5 @@ function stats(rows) {
     ? (handled.reduce((a, c) => a + c.handlingMinutes, 0) / handled.length).toFixed(1)
     : "0.0"
 
-  return { total, closed, open, escalated, breached, avgHandle: Number(avgHandle) }
+  return { total, closed, open, returned, escalated, breached, avgHandle: Number(avgHandle) }
 }

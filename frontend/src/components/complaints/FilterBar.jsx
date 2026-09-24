@@ -1,18 +1,7 @@
-import { Search, UserX } from "lucide-react"
+import { Search } from "lucide-react"
 import { Card } from "@/components/ui/Card"
 import { FilterSelect } from "@/components/ui/FilterSelect"
-import {
-  CASE_TYPES,
-  COMPANIES,
-  COMPLAINT_TYPES,
-  CHANNELS,
-  MODES,
-  OUTCOMES,
-  PENALTIES,
-  PRIORITIES,
-  STAGES,
-} from "@/data/catalog"
-import { OFFICERS } from "@/data/personas"
+import { COMPLAINT_TYPES, CHANNELS, MODES, PRIORITIES, STAGES } from "@/data/catalog"
 import { useT } from "@/i18n"
 
 /** Search row on top, a rule, then the dropdown grid — SMC's filter card. */
@@ -48,23 +37,16 @@ export function FilterBar({ filters, onChange, count, open }) {
         </span>
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-2 border-t border-[var(--border)] pt-3">
-        <FilterSelect label="Transport Mode" value={filters.mode} options={MODES} onChange={set("mode")} />
-        <FilterSelect label="Company" value={filters.company} options={COMPANIES} onChange={set("company")} />
+      {/* Five facets, one row. Ten wrapped onto two rows and pushed the
+          complaints themselves off the screen — and an investigator working
+          a queue narrows by what the complaint *is*, not by how it was
+          eventually ruled on. */}
+      <div className="mt-3 grid grid-cols-2 gap-2 border-t border-[var(--border)] pt-3 sm:grid-cols-3 lg:grid-cols-5">
+        <FilterSelect label="Type" value={filters.type} options={COMPLAINT_TYPES} onChange={set("type")} />
+        <FilterSelect label="Mode" value={filters.mode} options={MODES} onChange={set("mode")} />
         <FilterSelect label="Priority" value={filters.priority} options={PRIORITIES} onChange={set("priority")} />
         <FilterSelect label="Stage" value={filters.stage} options={STAGES} onChange={set("stage")} />
         <FilterSelect label="Channel" value={filters.channel} options={CHANNELS} onChange={set("channel")} />
-        <FilterSelect label="Complaint Type" value={filters.type} options={COMPLAINT_TYPES} onChange={set("type")} />
-        <FilterSelect label="Case Type" value={filters.caseType} options={CASE_TYPES} onChange={set("caseType")} />
-        <FilterSelect label="Verified Finding" value={filters.outcome} options={OUTCOMES} onChange={set("outcome")} />
-        <FilterSelect label="Action Taken" value={filters.actionTaken} options={PENALTIES} onChange={set("actionTaken")} />
-        <FilterSelect
-          label="Officer"
-          value={filters.officer}
-          options={OFFICERS.map((o) => o.name)}
-          onChange={set("officer")}
-          icon={<UserX className="size-3.5 shrink-0" />}
-        />
       </div>
     </Card>
   )

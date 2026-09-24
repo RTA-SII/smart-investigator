@@ -25,12 +25,21 @@ export function chtState(complaint, now) {
 export const isQueued = (c) => c.stage === "New" && !c.assignee
 
 /**
+ * Stages that are no longer the officer's to act on.
+ *
+ * Closed is obvious. Escalated is the supervisor's ruling from that point.
+ * Returned is back with Customer Happiness awaiting the missing detail —
+ * the officer cannot progress it and should not be held up by it, so it
+ * neither blocks the next arrival nor counts as unactioned.
+ */
+export const OFF_DESK = ["Closed", "Escalated", "Returned"]
+
+/**
  * Open work on this officer's name.
  *
- * Closed is obvious; escalated counts as off their plate too, because the
- * ruling is the supervisor's from that point. Every "how much has this
- * officer got on" answer in the app comes from here — the nav count, the
- * assignment picker and the arrival scheduler — so they cannot disagree.
+ * Every "how much has this officer got on" answer in the app comes from
+ * here — the nav count, the assignment picker and the arrival scheduler —
+ * so they cannot disagree.
  */
 export const isOpenFor = (c, officerId) =>
-  c.assignee?.id === officerId && c.stage !== "Closed" && c.stage !== "Escalated"
+  c.assignee?.id === officerId && !OFF_DESK.includes(c.stage)
