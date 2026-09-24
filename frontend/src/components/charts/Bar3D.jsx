@@ -17,9 +17,10 @@ const LABEL_W = 96
 const PAD_R = 58
 const VIEW_W = 520
 const AXIS_H = 34
-// Past this a bar stops reading as a bar and starts reading as a slab, so
-// surplus height goes into the gaps instead.
-const MAX_BAR = 46
+// A bar may grow a little past its natural thickness to take up a taller
+// card, but not far: much beyond this it stops reading as a bar and starts
+// reading as a slab. Surplus height goes into the gaps instead.
+const MAX_BAR = 32
 
 const lighten = (c) => `color-mix(in oklab, ${c} 78%, #fff)`
 const darken = (c) => `color-mix(in oklab, ${c} 72%, #000)`
@@ -51,7 +52,13 @@ export function Bar3D({ data, className }) {
   const height = Math.max(natural, fit)
   const pitch = (height - OFF - AXIS_H) / data.length
   const bar = Math.min(MAX_BAR, pitch * 0.55)
-  const ticks = [0, 0.25, 0.5, 0.75, 1]
+
+  // Quarters round to a repeated integer on a small scale — a four-complaint
+  // chart was labelled 0 1 2 2 3. Below five, one line per whole complaint.
+  const ticks =
+    max <= 4
+      ? Array.from({ length: max + 1 }, (_, i) => i / max)
+      : [0, 0.25, 0.5, 0.75, 1]
 
   return (
     <div
