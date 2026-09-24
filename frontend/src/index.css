@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+/* Tailwind v4 resolves `dark:` from `prefers-color-scheme` unless told
+   otherwise, but this app owns its theme — `session.js` toggles `.dark` on
+   the root and every hand-written rule below keys off that class. Without
+   this line the two disagree: on a machine set to dark, the app in light
+   mode still resolved every `dark:` utility, which is how the KPI meters
+   ended up drawing a white 10% track on a white card. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ──────────────────────────────────────────────────────────────────────────
    RTA typeface — the four weights the SMC portal self-hosts.
    Note the non-standard weight mapping: SMC maps "Regular" to 500, not 400.
@@ -100,9 +108,16 @@
   --action-neutral-edge: rgb(148 163 184 / 0.3);
   --action-success: #009a44;
   --action-success-edge: rgb(0 154 68 / 0.3);
+
+  /* The unfilled part of a KPI meter. SMC's reads as a definite grey rail
+     the fill sits in, not a faint wash — at 8% it disappeared against the
+     tile. */
+  --meter-track: rgb(0 0 0 / 0.11);
 }
 
 .dark {
+  --meter-track: rgb(255 255 255 / 0.12);
+
   --sk-shine: #8b8dc724;
   --sk-base: #ffffff0f;
   --sk-chart: #ffffff08;
