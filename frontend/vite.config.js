@@ -11,7 +11,7 @@ import { fileURLToPath, URL } from "node:url"
  * If this ever moves to a custom domain or an organisation site, the site
  * becomes the root and `base` goes back to "/".
  */
-const REPO = "/rta-smartinvestigationinitiative-demo/"
+const REPO = "/smart-investigator/"
 
 export default defineConfig(({ command }) => ({
   base: command === "build" ? REPO : "/",

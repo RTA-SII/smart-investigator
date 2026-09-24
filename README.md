@@ -6,7 +6,7 @@ cross-validation engine weighs it against telematics and camera evidence, and
 an investigation officer or supervisor rules on it inside a five-minute
 handling target.
 
-**▶ [Open the demo](https://fatehalishaikh.github.io/rta-smartinvestigationinitiative-demo/)**
+**▶ [Open the demo](https://rta-sii.github.io/smart-investigator/)**
 
 No sign-in: pick a role on the landing screen.
 
