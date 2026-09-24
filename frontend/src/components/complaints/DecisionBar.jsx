@@ -175,11 +175,34 @@ export function DecisionBar({ complaint, role }) {
  * stage that depends on who is looking: it is finished for the officer who
  * referred it and live for the supervisor who has to rule.
  */
+/**
+ * What the settled card says, named after the action that was taken rather
+ * than the finding filed against it.
+ *
+ * Read off the outcome, not the ruling record: only a decision made in
+ * session carries one, so keying on that would leave the whole seeded back
+ * catalogue with nothing to say.
+ */
+const SETTLED = {
+  "Valid Complaint - Guilty": "Complaint Closed — Fine Issued",
+  "Valid Complaint - Not Guilty": "No Enforcement was needed",
+  "Invalid Complaint - No Event Exists": "No Enforcement was needed",
+  "Face-to-Face Investigation Needed": "Face to Face Investigation was needed",
+  "Essential Information Missing": "Returned to Customer happiness",
+  "Potential Match Found": "Complaint Closed — Potential Match Found",
+}
+
 function settledLabel(c, role) {
-  if (c.stage === "Closed") return `Complaint Closed — ${c.outcome ?? "No finding recorded"}`
-  if (c.stage === "Returned") return "Returned to Customer Happiness"
-  if (c.stage === "Escalated" && role.id !== "supervisor")
-    return "Escalated — awaiting a supervisor ruling"
+  // An escalation is finished for the officer who referred it and live for
+  // the supervisor who has to rule on it.
+  if (c.stage === "Escalated" && role.id === "supervisor") return null
+
+  const named = SETTLED[c.outcome]
+  if (named) return named
+
+  if (c.stage === "Escalated") return "Escalated to Supervisor"
+  if (c.stage === "Returned") return "Returned to Customer happiness"
+  if (c.stage === "Closed") return "Complaint Closed"
   return null
 }
 

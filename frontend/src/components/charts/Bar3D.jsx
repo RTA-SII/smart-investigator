@@ -28,28 +28,29 @@ const darken = (c) => `color-mix(in oklab, ${c} 72%, #000)`
 export function Bar3D({ data, className }) {
   const [hover, setHover] = useState(null)
   const box = useRef(null)
-  const [fit, setFit] = useState(0)
+  const [size, setSize] = useState({ w: 0, h: 0 })
 
-  // A chart with three bars sitting in a row beside a tall pie gets stretched
-  // to the pie's height and used to leave the bottom half of its card empty.
-  // Matching the viewBox to the box's own aspect makes `meet` scale the chart
-  // to fill it instead of letterboxing it.
+  // The viewBox tracks the element's own pixel size, so one unit is one
+  // pixel whatever the card is. Without that the same chart rendered at two
+  // scales — narrow beside a pie, and nearly three times up in a full-width
+  // card, which magnified the 11px labels along with the bars.
   useEffect(() => {
     const el = box.current
     if (!el || typeof ResizeObserver === "undefined") return
 
     const ro = new ResizeObserver(([entry]) => {
       const { width, height } = entry.contentRect
-      setFit(width ? (VIEW_W * height) / width : 0)
+      setSize({ w: Math.round(width), h: Math.round(height) })
     })
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
 
   const max = Math.max(...data.map((d) => d.value), 1)
-  const plotW = VIEW_W - LABEL_W - PAD_R
   const natural = data.length * (BAR + GAP) + OFF + AXIS_H
-  const height = Math.max(natural, fit)
+  const width = size.w || VIEW_W
+  const height = Math.max(natural, size.h || natural)
+  const plotW = width - LABEL_W - PAD_R
   const pitch = (height - OFF - AXIS_H) / data.length
   const bar = Math.min(MAX_BAR, pitch * 0.55)
 
@@ -68,7 +69,7 @@ export function Bar3D({ data, className }) {
     >
       <>
         <svg
-          viewBox={`0 0 ${VIEW_W} ${height}`}
+          viewBox={`0 0 ${width} ${height}`}
           preserveAspectRatio="xMidYMid meet"
           direction="ltr"
           className="h-full w-full"
