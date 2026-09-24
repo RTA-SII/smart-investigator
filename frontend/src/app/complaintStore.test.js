@@ -78,6 +78,26 @@ describe("decide", () => {
     expect(complaintById(before.id).outcome).toBeNull()
   })
 
+  it("measures handling time on one clock, not two", () => {
+    // The SLA counts down in real seconds from `pulledAt`, while the audit
+    // trail is stamped against the demo clock. Measuring between the two
+    // produced handling times of minus several thousand minutes.
+    const id = deliverTo(buildArrival(900), OFFICERS[0])
+    expect(complaintById(id).pulledAt).toBeTruthy()
+
+    decide(id, { id: "guilty", label: "Issue Fine", note: "n/a" })
+
+    const mins = complaintById(id).handlingMinutes
+    expect(mins).toBeGreaterThanOrEqual(0)
+    expect(mins).toBeLessThan(1)
+  })
+
+  it("carries a handling time on every seeded closed complaint", () => {
+    const closed = allComplaints().filter((c) => c.stage === "Closed")
+    expect(closed.length).toBeGreaterThan(0)
+    expect(closed.every((c) => typeof c.handlingMinutes === "number")).toBe(true)
+  })
+
   it("records a finding on a case that is still open", () => {
     const before = openOne()
     decide(before.id, {

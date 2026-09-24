@@ -31,20 +31,39 @@ export function Dashboard() {
   const [days, setDays] = useState(7)
   const complaints = useComplaints()
 
-  // An officer's dashboard is about their own caseload, not the centre's.
-  // A supervisor monitors everything, so theirs stays estate-wide.
-  const mine = role.id !== "supervisor"
+  const officer = role.id !== "supervisor"
 
-  const rows = useMemo(() => {
+  // Three scopes, because the page answers three questions. My Productivity
+  // above is the officer's own record; Period overview is the centre's total,
+  // which is what gives their numbers a size to be read against; the charts
+  // are their caseload again, broken down. Scoping the totals to the officer
+  // as well only restated My Productivity in a second row.
+  const inRange = useMemo(() => {
     const cutoff = NOW.getTime() - days * 86_400_000
-    return complaints.filter(
-      (c) =>
-        new Date(c.receivedAt).getTime() >= cutoff &&
-        (!mine || c.assignee?.id === role.staff.code),
-    )
-  }, [complaints, days, mine, role.staff.code])
+    return complaints.filter((c) => new Date(c.receivedAt).getTime() >= cutoff)
+  }, [complaints, days])
 
-  const k = useMemo(() => stats(rows), [rows])
+  // The window immediately before this one, same length — what the deltas on
+  // the tiles are measured against.
+  const previous = useMemo(() => {
+    const end = NOW.getTime() - days * 86_400_000
+    const start = end - days * 86_400_000
+    return complaints.filter((c) => {
+      const at = new Date(c.receivedAt).getTime()
+      return at >= start && at < end
+    })
+  }, [complaints, days])
+
+  const charted = useMemo(
+    () =>
+      officer
+        ? inRange.filter((c) => c.assignee?.id === role.staff.code)
+        : inRange,
+    [inRange, officer, role.staff.code],
+  )
+
+  const k = useMemo(() => stats(inRange), [inRange])
+  const was = useMemo(() => stats(previous), [previous])
   const rangeLabel = t(RANGES.find((r) => r.value === days).label).toLowerCase()
 
   return (
@@ -59,12 +78,8 @@ export function Dashboard() {
       {role.id !== "supervisor" && <MyProductivity role={role} />}
 
       <SectionHeader
-        title={mine ? t("Your period overview") : t("Period overview")}
-        subtitle={`${
-          mine
-            ? t("Your complaints only")
-            : t("KPIs and charts for the selected time range")
-        } · ${t("last")} ${rangeLabel}`}
+        title={t("Period overview")}
+        subtitle={`${t("Every complaint the centre received")} · ${t("last")} ${rangeLabel}`}
         actions={
           <Segmented
             options={RANGES.map((r) => ({
@@ -82,20 +97,22 @@ export function Dashboard() {
         <KpiTile
           label={t("Total")}
           value={num(k.total)}
-          delta="+18%"
-          deltaUp
+          {...delta(k.total, was.total)}
           caption={`${t("vs previous")} ${rangeLabel}`}
           meter={100}
           tone="var(--tone-info)"
           icon={Layers}
           hint="All complaints ingested from CRM in this range"
         />
+        {/* No delta on this one. Every other tile compares volume against
+            the window before it, which is like for like. "Open" is a state
+            read today, so the earlier window holds only the stragglers that
+            never closed — comparing the two shows a vast rise on any healthy
+            week. */}
         <KpiTile
           label={t("Open")}
           value={num(k.open)}
-          delta="+24%"
-          deltaUp
-          caption={`${t("vs previous")} ${rangeLabel}`}
+          caption={t("Not yet ruled on")}
           meter={pct(k.open, k.total)}
           tone="var(--tone-critical)"
           icon={Inbox}
@@ -104,7 +121,7 @@ export function Dashboard() {
         <KpiTile
           label={t("Closed")}
           value={num(k.closed)}
-          delta="+11%"
+          {...delta(k.closed, was.closed, { upIsGood: true })}
           caption={`${t("vs previous")} ${rangeLabel}`}
           meter={pct(k.closed, k.total)}
           tone="var(--tone-low)"
@@ -140,16 +157,26 @@ export function Dashboard() {
         />
       </div>
 
-      <div className="mt-4 grid gap-4">
+      <SectionHeader
+        className="mt-6"
+        title={officer ? t("Your complaints") : t("Complaint breakdown")}
+        subtitle={`${
+          officer
+            ? t("Broken down across the complaints assigned to you")
+            : t("Broken down across every complaint in range")
+        } · ${t("last")} ${rangeLabel}`}
+      />
+
+      <div className="grid gap-4">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
-          <VolumeTrend rows={rows} days={days} />
-          <VerdictBreakdown rows={rows} />
+          <VolumeTrend rows={charted} days={days} />
+          <VerdictBreakdown rows={charted} />
         </div>
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
-          <ModeSplit rows={rows} />
-          <ActionSplit rows={rows} />
+          <ModeSplit rows={charted} />
+          <ActionSplit rows={charted} />
         </div>
-        <CategorySplit rows={rows} />
+        <CategorySplit rows={charted} />
       </div>
     </>
   )
@@ -157,6 +184,25 @@ export function Dashboard() {
 
 function pct(part, whole) {
   return whole ? Math.round((part / whole) * 100) : 0
+}
+
+/**
+ * Movement against the previous window of the same length.
+ *
+ * SMC shows a real figure here — "+55% vs previous 90 days" — so ours is
+ * computed too. With nothing in the previous window there is no percentage
+ * to state, and the tile shows none rather than inventing one.
+ */
+function delta(now, before, { upIsGood = false } = {}) {
+  if (!before) return {}
+  const change = Math.round(((now - before) / before) * 100)
+  if (!change) return {}
+  const up = change > 0
+  return {
+    delta: `${up ? "+" : ""}${change}%`,
+    deltaUp: up,
+    deltaGood: up === upIsGood,
+  }
 }
 
 function stats(rows) {
@@ -171,14 +217,9 @@ function stats(rows) {
       (NOW - new Date(c.receivedAt)) / 60_000 > c.slaMinutes,
   ).length
 
-  // Closed complaints carry a synthetic handling time derived from their age
-  // bucket; the demo's point is the ratio against the 5-minute target.
-  const handled = rows.filter((c) => c.stage === "Closed")
+  const handled = rows.filter((c) => c.handlingMinutes != null)
   const avgHandle = handled.length
-    ? (
-        handled.reduce((a, c) => a + 2.4 + (c.ai.confidence % 40) / 10, 0) /
-        handled.length
-      ).toFixed(1)
+    ? (handled.reduce((a, c) => a + c.handlingMinutes, 0) / handled.length).toFixed(1)
     : "0.0"
 
   return { total, closed, open, escalated, breached, avgHandle: Number(avgHandle) }

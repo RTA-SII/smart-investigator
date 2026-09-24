@@ -170,6 +170,13 @@ function buildOne(i, fresh = false) {
 
   // Closed work can carry the signed-in officer's name; anything still open
   // cannot, or their desk is not clear at sign-in and no arrival ever fires.
+  // How long the officer took, in minutes. Seeded rows were never actually
+  // worked, so theirs is generated — but it lives in the same field a real
+  // ruling writes to, and every "how long does this take" figure in the app
+  // reads that one field rather than deriving its own.
+  const handlingMinutes =
+    stage === "Closed" ? Number((1.4 + r() * 5.2).toFixed(1)) : null
+
   const assignee =
     stage === "New"
       ? null
@@ -186,6 +193,7 @@ function buildOne(i, fresh = false) {
     stage,
     outcome,
     penalty,
+    handlingMinutes,
     company: pick(r, COMPANIES),
     plate: plate(r),
     sideNumber: `${pick(r, ["EB", "DX", "HT", "XE"])}${Math.floor(r() * 900) + 100}`,
@@ -304,6 +312,7 @@ function fromRta(c, i) {
     ...c,
     stage: "Closed",
     penalty: c.form.actionTaken,
+    handlingMinutes: Number((1.4 + r() * 5.2).toFixed(1)),
     slaMinutes: 5,
     source: "RTA",
     assignee: { id: officer.id, name: officer.name },

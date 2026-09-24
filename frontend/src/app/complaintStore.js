@@ -22,12 +22,13 @@ import { COMPLAINTS, NOW } from "@/data/complaints"
  * was renamed to `Confirmed`. The version is in the key, and older keys are
  * swept on load, so that cannot happen silently again.
  */
-const DATA_VERSION = 4
+const DATA_VERSION = 5
 const KEY = `smc-complaints-data.v${DATA_VERSION}`
 const LEGACY_KEYS = [
   "smc-complaints-data",
   "smc-complaints-data.v2",
   "smc-complaints-data.v3",
+  "smc-complaints-data.v4",
 ]
 
 /**
@@ -144,9 +145,19 @@ export function decide(
       ? { id: officer.id, name: officer.name }
       : complaint.assignee
 
+  // Measured against wall time, not the demo clock: `pulledAt` is stamped
+  // when the complaint lands and the SLA counts down in real seconds, so the
+  // two ends of the measurement have to agree on which clock they are on.
+  // Mixing them produced handling times of minus several thousand minutes.
+  const handlingMinutes =
+    move.stage === "Closed" && complaint.pulledAt
+      ? Number(((Date.now() - new Date(complaint.pulledAt)) / 60_000).toFixed(1))
+      : complaint.handlingMinutes
+
   replace(id, {
     stage: move.stage,
     outcome,
+    handlingMinutes,
     penalty: applied,
     assignee: owner,
     // A reassigned complaint is live again, so the handling time restarts.

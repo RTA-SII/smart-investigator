@@ -12,8 +12,14 @@ export const pages = {
   open: "مفتوحة",
   closed: "مغلقة",
   "No complaints": "لا توجد شكاوى",
-  "Your period overview": "نظرة عامة على فترتك",
-  "Your complaints only": "شكاواك فقط",
+  "Every complaint the centre received": "كل الشكاوى التي استلمها المركز",
+  "Your complaints": "شكاواك",
+  "Complaint breakdown": "توزيع الشكاوى",
+  "Broken down across the complaints assigned to you":
+    "موزّعة على الشكاوى المُسندة إليك",
+  "Broken down across every complaint in range":
+    "موزّعة على كل الشكاوى ضمن الفترة",
+  "Not yet ruled on": "لم يُبتّ فيها بعد",
   "SLA Breached": "تجاوز المدة",
   "Avg Handling": "متوسط المعالجة",
 

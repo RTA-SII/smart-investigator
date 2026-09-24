@@ -8,7 +8,26 @@ import { InfoTip } from "@/components/ui/InfoTip"
  * very small type scale: value 18px/700, delta and caption 9px. Six sit across
  * a desktop row, so the tile has to stay tight.
  */
-export function KpiTile({ label, value, delta, deltaUp, caption, meter, tone, icon: Icon, hint }) {
+/**
+ * `deltaUp` points the arrow; `deltaGood` colours it.
+ *
+ * The two are not the same question, and SMC treats them separately: more
+ * alerts arriving is red, more alerts closed is green, and both arrows point
+ * up. Colouring by direction alone would mark a centre clearing its backlog
+ * faster as a problem.
+ */
+export function KpiTile({
+  label,
+  value,
+  delta,
+  deltaUp,
+  deltaGood = false,
+  caption,
+  meter,
+  tone,
+  icon: Icon,
+  hint,
+}) {
   return (
     <Card glint surface="dash-tile" className="px-3 py-2.5">
       <div className="relative flex items-start justify-between gap-1.5">
@@ -28,7 +47,7 @@ export function KpiTile({ label, value, delta, deltaUp, caption, meter, tone, ic
         {delta != null && (
           <span
             className="flex shrink-0 items-center gap-0.5 font-medium"
-            style={{ color: deltaUp ? "#ef4444" : "#16a34a" }}
+            style={{ color: deltaGood ? "#16a34a" : "#ef4444" }}
           >
             {deltaUp ? <TrendingUp className="size-2.5" /> : <TrendingDown className="size-2.5" />}
             {delta}

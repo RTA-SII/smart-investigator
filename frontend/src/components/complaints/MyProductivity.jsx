@@ -36,14 +36,9 @@ export function MyProductivity({ role }) {
     const closed = mine.filter((c) => c.stage === "Closed")
     const open = mine.filter((c) => c.stage !== "Closed")
 
-    // Handling time is only knowable where we have both ends of the clock.
-    const timed = closed.filter((c) => c.pulledAt && c.decision?.at)
+    const timed = closed.filter((c) => c.handlingMinutes != null)
     const avg = timed.length
-      ? timed.reduce(
-          (sum, c) =>
-            sum + (new Date(c.decision.at) - new Date(c.pulledAt)) / 60_000,
-          0,
-        ) / timed.length
+      ? timed.reduce((sum, c) => sum + c.handlingMinutes, 0) / timed.length
       : null
 
     return {
