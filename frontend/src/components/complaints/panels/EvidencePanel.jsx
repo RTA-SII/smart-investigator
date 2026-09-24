@@ -1,4 +1,3 @@
-import { useState } from "react"
 import { Camera, Download, FileText, Play } from "lucide-react"
 import { Card, CardTitle } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
@@ -17,11 +16,9 @@ const TAG_TONE = {
  *
  * `frame` carries the still; where a capture is unavailable the telemetry
  * burn-in still renders over a dark frame, which is what the operator sees
- * when the camera store is lagging. An item with `src` is a real recording
- * and plays in place when the officer presses it.
+ * when the camera store is lagging.
  */
 export function EvidencePanel({ complaint }) {
-  const [playing, setPlaying] = useState(null)
   return (
     <Card className="p-5">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
@@ -46,16 +43,7 @@ export function EvidencePanel({ complaint }) {
         {complaint.evidence.map((e) => (
           <figure key={e.label} className="flex min-w-0 flex-col">
             <div className="relative aspect-video overflow-hidden rounded-xl bg-[#0d1117]">
-              {playing === e.label ? (
-                <video
-                  src={e.src}
-                  autoPlay
-                  controls
-                  loop
-                  playsInline
-                  className="absolute inset-0 h-full w-full bg-black object-cover"
-                />
-              ) : e.frame ? (
+              {e.frame ? (
                 <img
                   src={e.frame}
                   alt={e.label}
@@ -72,33 +60,22 @@ export function EvidencePanel({ complaint }) {
                 </div>
               )}
 
-              {/* A recording plays where it sits. Without `src` the tile keeps
-                  the portal's play affordance over a still, which is what the
-                  rest of the set is. */}
-              {e.kind === "video" && playing !== e.label && (
-                <button
-                  type="button"
-                  disabled={!e.src}
-                  onClick={() => setPlaying(e.label)}
-                  aria-label={e.src ? `Play ${e.label}` : e.label}
-                  className="absolute inset-0 grid place-items-center enabled:cursor-pointer"
-                >
-                  <span className="grid size-11 place-items-center rounded-full bg-black/55 transition-transform duration-150 hover:scale-110">
+              {e.kind === "video" && (
+                <span className="absolute inset-0 grid place-items-center">
+                  <span className="grid size-11 place-items-center rounded-full bg-black/55">
                     <Play className="size-5 fill-white text-white" />
                   </span>
-                </button>
-              )}
-
-              {e.kind !== "doc" && playing !== e.label && <Burnin complaint={complaint} />}
-
-              {playing !== e.label && (
-                <span
-                  className="absolute top-2 end-2 rounded px-2 py-0.5 text-[10px] font-bold tracking-[0.5px] text-white uppercase"
-                  style={{ background: TAG_TONE[e.kind] }}
-                >
-                  {e.kind}
                 </span>
               )}
+
+              {e.kind !== "doc" && <Burnin complaint={complaint} />}
+
+              <span
+                className="absolute top-2 end-2 rounded px-2 py-0.5 text-[10px] font-bold tracking-[0.5px] text-white uppercase"
+                style={{ background: TAG_TONE[e.kind] }}
+              >
+                {e.kind}
+              </span>
             </div>
 
             <figcaption className="mt-2 min-w-0">
