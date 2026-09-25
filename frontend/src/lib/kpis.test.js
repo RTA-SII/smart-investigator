@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { COMPLAINTS } from "@/data/complaints"
 import { ROLES } from "@/data/personas"
-import { caseloadFor, caseloadStats, pct } from "./kpis"
+import { actionBreakdown, caseloadFor, caseloadStats, pct } from "./kpis"
 import { STAGES } from "@/data/catalog"
 
 const officer = ROLES.find((r) => r.id === "officer")
@@ -63,6 +63,29 @@ describe("caseloadFor", () => {
 
     expect(team.length).toBeGreaterThan(caseloadFor(COMPLAINTS, officer).length)
     expect(team.every((c) => c.assignee)).toBe(true)
+  })
+})
+
+describe("actionBreakdown", () => {
+  it("accounts for every closed complaint exactly once", () => {
+    // A pie's slices have to be the whole of what it charts. This one used
+    // to carry an extra "Other Penalty" slice counting every closed
+    // complaint that had any penalty — all of them, since "Not guilty" is
+    // itself an action — so it doubled the total and skewed every share.
+    for (const rows of [COMPLAINTS, caseloadFor(COMPLAINTS, officer)]) {
+      const closed = rows.filter((c) => c.stage === "Closed").length
+      const slices = actionBreakdown(rows).reduce((a, d) => a + d.value, 0)
+
+      expect(slices).toBe(closed)
+    }
+  })
+
+  it("leaves out an action nobody took", () => {
+    expect(actionBreakdown(COMPLAINTS).every((d) => d.value > 0)).toBe(true)
+  })
+
+  it("ignores complaints that are not closed", () => {
+    expect(actionBreakdown([{ stage: "Assigned", penalty: "Driver Fine" }])).toEqual([])
   })
 })
 

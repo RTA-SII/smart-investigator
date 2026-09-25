@@ -1,5 +1,6 @@
 import { NOW } from "@/data/complaints"
 import { OFF_DESK } from "@/lib/cht"
+import { PENALTIES } from "@/data/catalog"
 
 /**
  * One count of a set of complaints, for every KPI strip that shows one.
@@ -59,4 +60,24 @@ export function caseloadFor(complaints, role) {
   return role.id === "supervisor"
     ? complaints.filter((c) => c.assignee)
     : complaints.filter((c) => c.assignee?.id === role.staff.code)
+}
+
+/**
+ * What actually happened to the driver, across the complaints that closed.
+ *
+ * Every closed complaint carries exactly one action, so these are the whole
+ * of them — which is what lets them be drawn as a pie. The chart used to add
+ * an "Other Penalty" slice on top of the verified findings, counting every
+ * closed complaint that had any penalty at all: that was all of them, since
+ * "Not guilty" is itself a recorded action. The slice therefore always
+ * equalled the total and overlapped every other one, so the pie's
+ * percentages were wrong as well as its count.
+ */
+export function actionBreakdown(rows) {
+  const closed = rows.filter((c) => c.stage === "Closed")
+
+  return PENALTIES.map((name) => ({
+    name,
+    value: closed.filter((c) => (c.form?.actionTaken ?? c.penalty) === name).length,
+  })).filter((d) => d.value > 0)
 }

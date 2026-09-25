@@ -14,21 +14,23 @@ import { Pie3D } from "@/components/charts/Pie3D"
 import { Bar3D } from "@/components/charts/Bar3D"
 import { NOW } from "@/data/complaints"
 import { closedAt } from "@/lib/cht"
+import { actionBreakdown } from "@/lib/kpis"
 import {
   CATEGORIES,
   CHANNELS,
   MODES,
-  OUTCOMES,
-  OUTCOME_TONE,
+  PENALTIES,
 } from "@/data/catalog"
 import { useT } from "@/i18n"
 
-const TONE = {
-  critical: "var(--tone-critical)",
-  high: "var(--tone-high)",
-  low: "var(--tone-low)",
-  neutral: "var(--tone-neutral)",
-}
+/** One colour per action taken, in the order the catalog lists them. */
+const ACTION_COLORS = [
+  "var(--tone-medium)",
+  "var(--tone-critical)",
+  "#9b59b6",
+  "var(--tone-low)",
+  "#7a1113",
+]
 
 /** One colour per intake channel, in the order the catalog lists them. */
 const SOURCE_COLORS = ["var(--chart-1)", "#009cde", "#ff8200", "var(--tone-low)"]
@@ -243,24 +245,16 @@ export function ModeSplit({ rows }) {
 export function ActionSplit({ rows }) {
   const t = useT()
   const data = useMemo(() => {
-    const closed = rows.filter((c) => c.stage === "Closed")
-    const byOutcome = OUTCOMES.map((name) => ({
-      name,
-      value: closed.filter((c) => c.outcome === name).length,
-      color: TONE[OUTCOME_TONE[name]] ?? "var(--chart-1)",
+    return actionBreakdown(rows).map((d) => ({
+      ...d,
+      color: ACTION_COLORS[PENALTIES.indexOf(d.name) % ACTION_COLORS.length],
     }))
-    // A suspension rides alongside a fine, so it is its own bar, not a slice.
-    const suspended = closed.filter((c) => c.penalty).length
-    return [
-      ...byOutcome,
-      { name: "Other Penalty", value: suspended, color: "#9b59b6" },
-    ].filter((d) => d.value > 0)
   }, [rows])
 
   return (
     <ChartCard
       title="Complaints by Action Taken"
-      hint="Outcome of closed complaints. Other penalty counts suspensions issued alongside a fine, so it overlaps Fine Issued rather than adding to it."
+      hint="What actually happened to the driver on the complaints closed in this period. Every closed complaint carries exactly one action, so the slices are the whole of them."
       legend={data.map((d) => ({ label: d.name, color: d.color, value: d.value }))}
     >
       <Pie3D data={data.map((d) => ({ ...d, name: t(d.name) }))} />
