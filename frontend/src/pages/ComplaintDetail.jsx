@@ -21,7 +21,7 @@ import { AuditPanel } from "@/components/complaints/panels/AuditPanel"
 import { CommentsPanel } from "@/components/complaints/panels/CommentsPanel"
 import { CaseExceptions } from "@/components/complaints/CaseExceptions"
 import { Button } from "@/components/ui/Button"
-import { downloadInvestigationForm } from "@/lib/investigationFormDoc"
+import { downloadComplaintReport } from "@/lib/complaintReportDoc"
 import { useT } from "@/i18n"
 import { AssignmentPanel } from "@/components/complaints/AssignmentPanel"
 import { useComplaints } from "@/app/complaintStore"
@@ -91,10 +91,10 @@ export function ComplaintDetail() {
           size="sm"
           variant="ghost"
           className="ms-auto shrink-0"
-          onClick={() => downloadInvestigationForm(complaint)}
+          onClick={() => downloadComplaintReport(complaint)}
         >
           <Download />
-          {t("Investigation Form")}
+          {t("Complaint Report")}
         </Button>
       </div>
 

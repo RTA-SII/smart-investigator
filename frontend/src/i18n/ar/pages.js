@@ -147,6 +147,7 @@ export const pages = {
 
   // The Investigation Form.
   "Investigation Form": "استمارة التحقيق",
+  "Complaint Report": "تقرير الشكوى",
   "Recommended Action": "الإجراء الموصى به",
   "Show the investigation report": "عرض تقرير التحقيق",
   "Hide the investigation report": "إخفاء تقرير التحقيق",
