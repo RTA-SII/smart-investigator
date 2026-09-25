@@ -131,6 +131,30 @@ export const pages = {
   "Nothing assigned to you in this scope": "لا توجد شكاوى مُسندة إليك ضمن هذا النطاق",
 
   // The Take Action card — RTA's verified findings.
+  // The productivity strip.
+  "My Productivity": "إنتاجيتي",
+  Unactioned: "لم يُتخذ إجراء",
+  "Still waiting on you": "لا تزال بانتظارك",
+  "still active": "لا تزال مفتوحة",
+  "Target 5m": "المستهدف ٥ دقائق",
+  "Complaints ruled on and filed.": "شكاوى تم البتّ فيها وحفظها.",
+  "Open complaints with a clock running on them.":
+    "شكاوى مفتوحة تسري عليها مهلة.",
+  "Every complaint that has carried your name, open or closed.":
+    "كل شكوى حملت اسمك، مفتوحة كانت أو مغلقة.",
+  "Every complaint carrying an officer's name, open or closed.":
+    "كل شكوى تحمل اسم ضابط، مفتوحة كانت أو مغلقة.",
+  "Measured from the moment a complaint was picked up to the moment it was ruled on.":
+    "تُقاس من لحظة استلام الشكوى حتى لحظة البتّ فيها.",
+  "Your own numbers, not the centre's. They move as you work.":
+    "أرقامك أنت، لا أرقام المركز. تتغيّر مع عملك.",
+  "The team's caseload, not the centre's intake. The four stage figures add up to the caseload.":
+    "حِمل الفريق، لا وارد المركز. أرقام المراحل الأربع تساوي مجموع الحِمل.",
+  "Complaints of yours sitting with a supervisor right now.":
+    "شكاواك الموجودة لدى المشرف حالياً.",
+  "Referrals waiting on a supervisor ruling right now.":
+    "إحالات بانتظار قرار المشرف حالياً.",
+
   "Take Action": "اتخاذ إجراء",
   "Return to Customer Happiness": "الإعادة إلى سعادة المتعاملين",
   "Escalate to Supervisor": "التصعيد إلى المشرف",

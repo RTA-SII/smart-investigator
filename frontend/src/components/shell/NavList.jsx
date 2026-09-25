@@ -29,7 +29,7 @@ export function NavList({ sections, onNavigate }) {
                     cn(
                       // The border is always present — transparent when idle —
                       // so the active stroke never shifts the row.
-                      "flex items-center gap-3 rounded-xl border px-3 py-2.5 text-sm font-medium",
+                      "flex items-center gap-3 rounded-xl border px-3 py-2 text-sm font-medium",
                       "transition-colors duration-150 ease-[cubic-bezier(0.4,0,0.2,1)]",
                       isActive
                         ? "border-[color-mix(in_oklab,var(--primary)_20%,transparent)] bg-[color-mix(in_oklab,var(--primary)_10%,transparent)] text-[var(--primary)]"
@@ -38,7 +38,13 @@ export function NavList({ sections, onNavigate }) {
                   }
                 >
                   <it.icon className="size-4 shrink-0" />
-                  <span className="min-w-0 flex-1 truncate leading-none">{t(it.label)}</span>
+                  {/* `truncate` clips to the line box, so the line box has
+                      to hold the glyphs: at `leading-none` a 14px box cut
+                      2.7px off letters like D and C. The row keeps its
+                      height by giving that back from the padding. */}
+                  <span className="min-w-0 flex-1 truncate leading-5">
+                    {t(it.label)}
+                  </span>
                   {it.count > 0 && (
                     <span className="grid h-[18px] shrink-0 place-items-center rounded-full bg-[var(--primary)] px-1.5 text-[10px] leading-none font-bold text-[var(--primary-foreground)]">
                       {it.count}
