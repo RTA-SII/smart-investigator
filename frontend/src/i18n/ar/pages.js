@@ -133,6 +133,7 @@ export const pages = {
   // The Take Action card — RTA's verified findings.
   // The productivity strip.
   "My Productivity": "إنتاجيتي",
+  "All time": "كل الفترات",
   Unactioned: "لم يُتخذ إجراء",
   "Still waiting on you": "لا تزال بانتظارك",
   "still active": "لا تزال مفتوحة",
@@ -140,10 +141,10 @@ export const pages = {
   "Complaints ruled on and filed.": "شكاوى تم البتّ فيها وحفظها.",
   "Open complaints with a clock running on them.":
     "شكاوى مفتوحة تسري عليها مهلة.",
-  "Every complaint that has carried your name, open or closed.":
-    "كل شكوى حملت اسمك، مفتوحة كانت أو مغلقة.",
-  "Every complaint carrying an officer's name, open or closed.":
-    "كل شكوى تحمل اسم ضابط، مفتوحة كانت أو مغلقة.",
+  "Every complaint that has carried your name, open or closed, not the period selected below.":
+    "كل شكوى حملت اسمك، مفتوحة كانت أو مغلقة — لا الفترة المحددة أدناه.",
+  "Every complaint the team has carried, open or closed, since the centre opened — not the period selected below.":
+    "كل شكوى حملها الفريق، مفتوحة كانت أو مغلقة، منذ بدء العمل — لا الفترة المحددة أدناه.",
   "Measured from the moment a complaint was picked up to the moment it was ruled on.":
     "تُقاس من لحظة استلام الشكوى حتى لحظة البتّ فيها.",
   "Your own numbers, not the centre's. They move as you work.":

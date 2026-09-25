@@ -49,8 +49,8 @@ export function MyProductivity({ role }) {
       tone: "var(--tone-info)",
       icon: Inbox,
       hint: team
-        ? t("Every complaint carrying an officer's name, open or closed.")
-        : t("Every complaint that has carried your name, open or closed."),
+        ? t("Every complaint the team has carried, open or closed, since the centre opened — not the period selected below.")
+        : t("Every complaint that has carried your name, open or closed, not the period selected below."),
     },
     {
       label: "Closed",
@@ -135,8 +135,17 @@ export function MyProductivity({ role }) {
             {role.staff.name} · {role.staff.code}
           </p>
         </div>
-        <span className="ms-auto grid size-8 shrink-0 place-items-center rounded-lg text-[var(--muted-foreground)]">
-          <SlidersHorizontal className="size-4" />
+        {/* Says the scope out loud. Period overview below counts a chosen
+            window; this counts the whole book, and for a supervisor — whose
+            team is the entire centre — that is the only thing separating the
+            two totals. */}
+        <span className="ms-auto flex shrink-0 items-center gap-2">
+          <span className="rounded-full bg-[var(--accent)] px-2.5 py-1 text-[10px] font-semibold tracking-[0.5px] text-[var(--primary)] uppercase">
+            {t("All time")}
+          </span>
+          <span className="grid size-8 place-items-center rounded-lg text-[var(--muted-foreground)]">
+            <SlidersHorizontal className="size-4" />
+          </span>
         </span>
       </div>
 
