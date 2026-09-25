@@ -16,6 +16,7 @@ import { useComplaints } from "@/app/complaintStore"
 import { roleById } from "@/data/personas"
 import { useSession } from "@/app/session"
 import { num } from "@/lib/format"
+import { caseloadStats, pct } from "@/lib/kpis"
 import { useT } from "@/i18n"
 
 const RANGES = [
@@ -62,8 +63,8 @@ export function Dashboard() {
     [inRange, officer, role.staff.code],
   )
 
-  const k = useMemo(() => stats(inRange), [inRange])
-  const was = useMemo(() => stats(previous), [previous])
+  const k = useMemo(() => caseloadStats(inRange), [inRange])
+  const was = useMemo(() => caseloadStats(previous), [previous])
   const rangeLabel = t(RANGES.find((r) => r.value === days).label).toLowerCase()
 
   return (
@@ -73,13 +74,16 @@ export function Dashboard() {
         subtitle={`${t(role.title)} · ${t("Public complaints received from CRM, with AI cross-validation")}`}
       />
 
-      {/* An officer's own numbers come first — the centre-wide view below is
-          context, but their queue is the job. */}
-      {role.id !== "supervisor" && <MyProductivity role={role} />}
+      {/* The signed-in person's own numbers come first — the centre-wide
+          view below is context. For an officer that is their caseload; for a
+          supervisor, the team's. */}
+      <MyProductivity role={role} />
 
       <SectionHeader
         title={t("Period overview")}
-        subtitle={`${t("Every complaint the centre received")} · ${t("last")} ${rangeLabel}`}
+        subtitle={`${t("Every complaint the centre received")} · ${t("last")} ${rangeLabel}${
+          k.avgHandling == null ? "" : ` · ${k.avgHandling}m ${t("average handling")}`
+        }`}
         actions={
           <Segmented
             options={RANGES.map((r) => ({
@@ -139,20 +143,23 @@ export function Dashboard() {
         <KpiTile
           label={t("SLA Breached")}
           value={num(k.breached)}
-          caption={t("Past the 5-minute target")}
-          meter={pct(k.breached, k.total)}
+          caption={t("Of everything still open")}
+          meter={pct(k.breached, k.total - k.closed)}
           tone="var(--tone-critical)"
           icon={Timer}
-          hint="Every complaint carries a 5-minute handling target"
+          hint="Open complaints past the five-minute handling target. Spans the other three states rather than being one of them, so it does not add into the total."
         />
+        {/* The fourth stage, without which the row does not add up: closed,
+            escalated, returned and in progress are every complaint in the
+            range exactly once. */}
         <KpiTile
-          label={t("Avg Handling")}
-          value={`${k.avgHandle}m`}
-          caption={`${t("Last")} ${rangeLabel} · ${t("target 5m")}`}
-          meter={Math.min(100, (k.avgHandle / 5) * 100)}
-          tone={k.avgHandle <= 5 ? "var(--tone-low)" : "var(--tone-high)"}
+          label={t("In Progress")}
+          value={num(k.inProgress)}
+          caption={t("With an officer now")}
+          meter={pct(k.inProgress, k.total)}
+          tone="var(--tone-info)"
           icon={Clock}
-          hint="Receipt to decision"
+          hint="Assigned or under investigation — not yet ruled on, returned or escalated"
         />
       </div>
 
@@ -181,17 +188,6 @@ export function Dashboard() {
   )
 }
 
-function pct(part, whole) {
-  return whole ? Math.round((part / whole) * 100) : 0
-}
-
-/**
- * Movement against the previous window of the same length.
- *
- * SMC shows a real figure here — "+55% vs previous 90 days" — so ours is
- * computed too. With nothing in the previous window there is no percentage
- * to state, and the tile shows none rather than inventing one.
- */
 function delta(now, before, { upIsGood = false } = {}) {
   if (!before) return {}
   const change = Math.round(((now - before) / before) * 100)
@@ -202,25 +198,4 @@ function delta(now, before, { upIsGood = false } = {}) {
     deltaUp: up,
     deltaGood: up === upIsGood,
   }
-}
-
-function stats(rows) {
-  const total = rows.length
-  const closed = rows.filter((c) => c.stage === "Closed").length
-  const escalated = rows.filter((c) => c.stage === "Escalated").length
-  const returned = rows.filter((c) => c.stage === "Returned").length
-  const open = total - closed
-  // A complaint breaches if it is still open past its five-minute target.
-  const breached = rows.filter(
-    (c) =>
-      c.stage !== "Closed" &&
-      (NOW - new Date(c.receivedAt)) / 60_000 > c.slaMinutes,
-  ).length
-
-  const handled = rows.filter((c) => c.handlingMinutes != null)
-  const avgHandle = handled.length
-    ? (handled.reduce((a, c) => a + c.handlingMinutes, 0) / handled.length).toFixed(1)
-    : "0.0"
-
-  return { total, closed, open, returned, escalated, breached, avgHandle: Number(avgHandle) }
 }

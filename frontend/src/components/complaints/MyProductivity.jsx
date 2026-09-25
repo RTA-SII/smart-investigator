@@ -4,8 +4,8 @@ import {
   CircleCheck,
   Clock,
   Inbox,
+  ShieldAlert,
   SlidersHorizontal,
-  TrendingUp,
   TriangleAlert,
   Undo2,
 } from "lucide-react"
@@ -14,113 +14,102 @@ import { Meter } from "@/components/ui/Meter"
 import { InfoTip } from "@/components/ui/InfoTip"
 import { useComplaints } from "@/app/complaintStore"
 import { initials } from "@/lib/format"
-import { wasEscalated } from "@/lib/filters"
-import { OFF_DESK } from "@/lib/cht"
+import { caseloadFor, caseloadStats, pct } from "@/lib/kpis"
 import { useT } from "@/i18n"
 import { cn } from "@/lib/cn"
 
 /**
- * The officer's own numbers — SMC's "My Productivity" strip.
+ * The productivity strip — SMC's "My Productivity".
  *
- * Everything here is about the person signed in, not the centre: what they
- * hold, what they have finished, and how long they take. It is derived from
- * the live store, so closing a complaint moves it while you watch.
+ * An officer sees their own caseload. A supervisor sees the team's, because
+ * they hold no complaints themselves: they rule on what comes up and answer
+ * for what the officers are carrying.
+ *
+ * The four stage tiles are a partition of the first one — closed, returned,
+ * escalated and unactioned add up to the total beside them, every time. They
+ * did not before: escalations counted every complaint that had *ever* gone
+ * up, so anything escalated and later closed was in two tiles at once and
+ * the row came to more than the total.
  */
 export function MyProductivity({ role }) {
   const complaints = useComplaints()
   const navigate = useNavigate()
   const t = useT()
-  const code = role.staff.code
 
-  const stats = useMemo(() => {
-    const mine = complaints.filter((c) => c.assignee?.id === code)
-    const closed = mine.filter((c) => c.stage === "Closed")
-    // What is actually theirs to act on — the same rule the nav count and
-    // the arrival scheduler use, so "unactioned" cannot mean one thing here
-    // and another in the sidebar.
-    const open = mine.filter((c) => !OFF_DESK.includes(c.stage))
-
-    const timed = closed.filter((c) => c.handlingMinutes != null)
-    const avg = timed.length
-      ? timed.reduce((sum, c) => sum + c.handlingMinutes, 0) / timed.length
-      : null
-
-    return {
-      assigned: mine.length,
-      active: open.length,
-      handled: closed.length,
-      // Sent back to Customer Happiness for the missing detail. Not the
-      // officer's failure and not their work any more, but still on their
-      // name until the detail comes back.
-      returned: mine.filter((c) => c.stage === "Returned").length,
-      avg,
-      escalated: mine.filter(wasEscalated).length,
-      unactioned: open.length,
-      openIds: open.map((c) => c.id),
-    }
-  }, [complaints, code])
+  const team = role.id === "supervisor"
+  const rows = useMemo(() => caseloadFor(complaints, role), [complaints, role])
+  const k = useMemo(() => caseloadStats(rows), [rows])
 
   const tiles = [
     {
-      label: "Total Assigned",
-      value: stats.assigned,
-      caption: `${stats.active} ${t("still active")}`,
+      label: team ? "Team Caseload" : "Total Assigned",
+      value: k.total,
+      caption: `${k.inProgress} ${t("still active")}`,
       meter: 100,
       tone: "var(--tone-info)",
       icon: Inbox,
-      hint: t("Every complaint that has carried your name, open or closed."),
+      hint: team
+        ? t("Every complaint carrying an officer's name, open or closed.")
+        : t("Every complaint that has carried your name, open or closed."),
     },
     {
       label: "Closed",
-      value: stats.handled,
-      caption: t("Ruled on by you"),
-      meter: pct(stats.handled, stats.assigned),
+      value: k.closed,
+      caption: team ? t("Ruled on by the team") : t("Ruled on by you"),
+      meter: pct(k.closed, k.total),
       tone: "var(--tone-low)",
       icon: CircleCheck,
-      hint: t("Complaints you have ruled on and filed."),
+      hint: t("Complaints ruled on and filed."),
     },
     {
       label: "Returned",
-      value: stats.returned,
+      value: k.returned,
       caption: t("Sent back for missing detail"),
-      meter: pct(stats.returned, stats.assigned),
+      meter: pct(k.returned, k.total),
       tone: "var(--tone-medium)",
       icon: Undo2,
       hint: t("Returned to Customer Happiness because an essential detail was missing."),
     },
     {
-      label: "Avg handling time",
-      value: stats.avg == null ? "—" : `${stats.avg.toFixed(1)}m`,
+      label: "Avg Handling",
+      value: k.avgHandling == null ? "—" : `${k.avgHandling}m`,
       caption: t("Target 5m"),
-      meter: stats.avg == null ? 0 : Math.min(100, (stats.avg / 5) * 100),
+      meter: k.avgHandling == null ? 0 : Math.min(100, (k.avgHandling / 5) * 100),
       tone: "var(--tone-high)",
       icon: Clock,
-      hint: t("Measured from the moment a complaint reached you to the moment you ruled. Shows — until you have closed one."),
+      hint: t("Measured from the moment a complaint was picked up to the moment it was ruled on."),
     },
     {
-      label: "Escalations",
-      value: stats.escalated,
-      caption: t("Passed to a supervisor"),
-      meter: pct(stats.escalated, stats.assigned),
+      // Counts what is sitting at Escalated now, not what ever went up: this
+      // tile is a slice of the total above it, and has to behave like one.
+      label: team ? "Awaiting Ruling" : "Escalations",
+      value: k.escalated,
+      caption: team ? t("Referred up to you") : t("With a supervisor"),
+      meter: pct(k.escalated, k.total),
       tone: "#9B59B6",
-      icon: TrendingUp,
-      hint: t("Complaints of yours that went up for a supervisor ruling."),
+      icon: ShieldAlert,
+      hint: team
+        ? t("Referrals waiting on a supervisor ruling right now.")
+        : t("Complaints of yours sitting with a supervisor right now."),
+      to: k.escalated ? "/complaints" : null,
     },
     {
       label: "Unactioned",
-      value: stats.unactioned,
-      caption: t("Still waiting on you"),
-      meter: pct(stats.unactioned, stats.assigned),
+      value: k.inProgress,
+      caption: team ? t("Still with an officer") : t("Still waiting on you"),
+      meter: pct(k.inProgress, k.total),
       tone: "var(--tone-critical)",
       icon: TriangleAlert,
-      hint: t("Open complaints on your name — the ones a clock is running on."),
+      hint: t("Open complaints with a clock running on them."),
       // The point of this tile is to be acted on. One outstanding complaint
       // opens straight onto it; more than one goes to the list holding them.
       to:
-        stats.unactioned === 1
-          ? `/complaints/${stats.openIds[0]}`
-          : stats.unactioned
-            ? "/my-queue"
+        k.inProgress === 1
+          ? `/complaints/${k.inProgressIds[0]}`
+          : k.inProgress
+            ? team
+              ? "/complaints"
+              : "/my-queue"
             : null,
     },
   ]
@@ -133,8 +122,14 @@ export function MyProductivity({ role }) {
         </span>
         <div className="min-w-0">
           <p className="flex items-center gap-2 text-base font-bold">
-            {t("My Productivity")}
-            <InfoTip label={t("Your own numbers, not the centre's. They move as you work.")} />
+            {t(team ? "Team Productivity" : "My Productivity")}
+            <InfoTip
+              label={t(
+                team
+                  ? "The team's caseload, not the centre's intake. The four stage figures add up to the caseload."
+                  : "Your own numbers, not the centre's. They move as you work.",
+              )}
+            />
           </p>
           <p className="ltr-value truncate text-[11px] text-[var(--muted-foreground)]">
             {role.staff.name} · {role.staff.code}
@@ -144,6 +139,7 @@ export function MyProductivity({ role }) {
           <SlidersHorizontal className="size-4" />
         </span>
       </div>
+
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
         {tiles.map((tile) => (
           <Tile
@@ -157,8 +153,6 @@ export function MyProductivity({ role }) {
     </Card>
   )
 }
-
-const pct = (part, whole) => (whole ? Math.round((part / whole) * 100) : 0)
 
 function Tile({ label, value, caption, meter, tone, icon: Icon, hint, onOpen }) {
   return (
