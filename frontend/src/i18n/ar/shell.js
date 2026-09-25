@@ -1,6 +1,6 @@
 /** Chrome: navigation, top bar, and the role picker. */
 export const shell = {
-  "Smart Investigator Initiative": "مبادرة المحقق الذكي",
+  "Smart Investigation Initiative": "مبادرة التحقيق الذكي",
   Dashboard: "لوحة المعلومات",
   "Complaint Management": "إدارة الشكاوى",
   "All Complaints": "جميع الشكاوى",

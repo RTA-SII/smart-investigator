@@ -198,7 +198,7 @@ ${section(
 ${section("Audit trail", trail(c.timeline))}
 
 <footer>
-  Smart Investigator Initiative &middot; generated ${stamp(new Date().toISOString())}
+  Smart Investigation Initiative &middot; generated ${stamp(new Date().toISOString())}
 </footer>
 </body>
 </html>`

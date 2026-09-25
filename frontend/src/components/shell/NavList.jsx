@@ -64,7 +64,7 @@ export function NavBrand({ className }) {
           the name is the whole wordmark now, and wrapping it across two
           lines made the rail look like it held two separate labels. */}
       <p className="min-w-0 truncate text-[13px] leading-tight font-bold tracking-[-0.1px]">
-        {t("Smart Investigator Initiative")}
+        {t("Smart Investigation Initiative")}
       </p>
     </div>
   )

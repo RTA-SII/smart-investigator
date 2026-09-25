@@ -333,7 +333,7 @@ dated on the demo clock, in the same toast.
 
 ### Phase 9 — Conformance to the POC scope (2026-09-21)
 
-The official *Smart Investigator Initiative* scope document was read against
+The official *Smart Investigation Initiative* scope document was read against
 the build. Four gaps came out of it; all four are now closed.
 
 **A live complaint store.** `COMPLAINTS` had been a frozen module constant, so

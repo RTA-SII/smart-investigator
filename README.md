@@ -1,4 +1,4 @@
-# RTA Smart Investigator Initiative — Demo
+# RTA Smart Investigation Initiative — Demo
 
 A working front-end demo of the complaints investigation module for the RTA
 Smart Monitoring Centre: a public complaint arrives from CRM, an AI

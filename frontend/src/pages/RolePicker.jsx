@@ -35,8 +35,11 @@ export function RolePicker() {
             <p className="truncate text-xl leading-tight font-bold">
               Roads and Transport Authority
             </p>
-            <p className="truncate text-[11px] tracking-[1px] text-[var(--muted-foreground)] uppercase">
-              Smart Investigator Initiative
+            <p className="truncate text-[11px] font-semibold tracking-[1px] text-[var(--muted-foreground)] uppercase">
+              Smart Investigation Initiative
+            </p>
+            <p className="truncate text-[11px] text-[var(--muted-foreground)]">
+              AI-powered investigation, analysis, and decision support
             </p>
           </div>
         </div>
