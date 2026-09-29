@@ -1,0 +1,28 @@
+# Response headers for Cloudflare Pages. Read from the root of the build
+# output, which is where `public/` lands, so this file ships as `/_headers`.
+#
+# GitHub Pages ignores it entirely — it has no equivalent — which is one more
+# reason the Cloudflare deployment is the one to keep.
+#
+# No Content-Security-Policy here on purpose: an untested CSP that breaks the
+# complaint-report download in a reviewer's browser is worse than none, and it
+# cannot be tested without deploying. Worth adding once the site is live and a
+# policy can be verified against the real thing.
+
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+  # A private demo has no business in a search index. Cloudflare Access already
+  # stops a crawler reaching it; this is what covers any window where it does
+  # not.
+  X-Robots-Tag: noindex, nofollow
+
+# Vite fingerprints everything under /assets, so it can be cached hard and
+# forever. index.html must not be — it is what points at the new fingerprints.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/index.html
+  Cache-Control: no-cache

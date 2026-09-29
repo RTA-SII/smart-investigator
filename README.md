@@ -8,7 +8,13 @@ handling target.
 
 **▶ [Open the demo](https://rta-sii.github.io/smart-investigator/)**
 
-No sign-in: pick a role on the landing screen.
+Access to the demo is moving behind Cloudflare Access, which stops a visitor
+at the edge and sends them an email code before the site is served at all —
+see [DEPLOY.md](DEPLOY.md). The GitHub Pages link above is the open copy and
+is retired at the end of that process.
+
+Once past the gate there is no second sign-in: pick a role on the landing
+screen.
 
 | Role | What they do |
 |---|---|

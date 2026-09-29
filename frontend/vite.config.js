@@ -4,17 +4,22 @@ import tailwindcss from "@tailwindcss/vite"
 import { fileURLToPath, URL } from "node:url"
 
 /**
- * GitHub Pages serves a project site from `/<repo>/`, so `base` has to be the
- * repository name or every asset 404s. Only on build — `npm run dev` stays at
- * the root. The app uses a hash router, so deep links need no 404 fallback.
+ * Where the site is served from, which is not the same on both hosts.
  *
- * If this ever moves to a custom domain or an organisation site, the site
- * becomes the root and `base` goes back to "/".
+ * Cloudflare Pages serves it at the root of its own hostname, so `base` is
+ * "/". GitHub Pages serves a project site from `/<repo>/`, so its workflow
+ * sets `VITE_BASE` to the repository name — without it every asset 404s.
+ *
+ * The root default is deliberate: Cloudflare is the protected deployment and
+ * the one that should be hard to get wrong. When GitHub Pages is retired this
+ * whole knob goes away and `base` is simply "/".
+ *
+ * `npm run dev` always serves from the root, whatever is set.
  */
-const REPO = "/smart-investigator/"
+const BASE = process.env.VITE_BASE ?? "/"
 
 export default defineConfig(({ command }) => ({
-  base: command === "build" ? REPO : "/",
+  base: command === "build" ? BASE : "/",
   plugins: [react(), tailwindcss()],
   server: {
     host: "0.0.0.0",

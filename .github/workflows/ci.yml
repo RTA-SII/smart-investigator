@@ -39,6 +39,11 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+        # GitHub Pages serves a project site from /<repo>/; Cloudflare Pages,
+        # which is the protected deployment, serves from the root and takes
+        # the default. Retiring Pages retires this line with it.
+        env:
+          VITE_BASE: /smart-investigator/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: frontend/dist

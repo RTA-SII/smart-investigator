@@ -3,6 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- A private demo has no business in a search index. The Cloudflare
+         deployment sends this as a header too; this covers the copy that is
+         still on GitHub Pages, which has no way to send headers at all. -->
+    <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" type="image/svg+xml" href="./rta-icon.svg" />
     <title>RTA Complaints Investigation</title>
   </head>
