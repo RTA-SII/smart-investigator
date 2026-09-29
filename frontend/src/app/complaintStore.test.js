@@ -11,8 +11,11 @@ import {
   TRANSITIONS,
   verifyAi,
 } from "./complaintStore"
-import { OFFICERS, officerLoads } from "@/data/personas"
+import { OFFICERS, officerLoads, ROLES } from "@/data/personas"
 import { buildArrival, COMPLAINTS } from "@/data/complaints"
+import { isMine, isMineOpen } from "@/lib/ownership"
+
+const SUPERVISOR = ROLES.find((r) => r.id === "supervisor")
 
 
 const openOne = () => allComplaints().find((c) => c.stage !== "Closed")
@@ -76,6 +79,39 @@ describe("decide", () => {
     // Escalating is the one route that records no finding: the officer is
     // not ruling, they are saying they cannot.
     expect(complaintById(before.id).outcome).toBeNull()
+  })
+
+  it("puts the escalation on the supervisor's own list, not just a new stage", () => {
+    const before = openOne()
+    decide(before.id, { id: "escalate", label: "Escalate to Supervisor", note: "n/a" })
+
+    const after = complaintById(before.id)
+    // Theirs to rule on...
+    expect(isMineOpen(after, SUPERVISOR)).toBe(true)
+    // ...and no longer the officer's to act on, though it keeps their name so
+    // the trail can still say who sent it up.
+    expect(after.assignee?.id).toBe(before.assignee?.id)
+    expect(isMineOpen(after, ROLES[0])).toBe(false)
+  })
+
+  it("refers a face-to-face finding upward the same way", () => {
+    const before = openOne()
+    decide(before.id, {
+      id: "faceToFace",
+      label: "Face-to-Face Investigation Needed",
+      note: "n/a",
+    })
+    expect(isMineOpen(complaintById(before.id), SUPERVISOR)).toBe(true)
+  })
+
+  it("a ruling leaves the referral in the supervisor's history, not their work", () => {
+    const before = openOne()
+    decide(before.id, { id: "escalate", label: "Escalate to Supervisor", note: "n/a" })
+    decide(before.id, { id: "guilty", label: "Issue Fine", note: "n/a" })
+
+    const after = complaintById(before.id)
+    expect(isMine(after, SUPERVISOR)).toBe(true)
+    expect(isMineOpen(after, SUPERVISOR)).toBe(false)
   })
 
   it("measures handling time on one clock, not two", () => {

@@ -84,7 +84,10 @@ export function MyProductivity({ role }) {
       // tile is a slice of the total above it, and has to behave like one.
       label: team ? "Awaiting Ruling" : "Escalations",
       value: k.escalated,
-      caption: team ? t("Referred up to you") : t("With a supervisor"),
+      // Not "referred up to you": this is the team's figure, and the centre
+      // has a second supervisor. What is waiting on the signed-in one is on
+      // their My Complaints, and the two must not claim to be the same number.
+      caption: team ? t("Awaiting a supervisor ruling") : t("With a supervisor"),
       meter: pct(k.escalated, k.total),
       tone: "#9B59B6",
       icon: ShieldAlert,

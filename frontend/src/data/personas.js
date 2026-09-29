@@ -29,6 +29,20 @@ export function roleById(id) {
   return ROLES.find((r) => r.id === id) ?? ROLES[0]
 }
 
+/**
+ * The supervisor on duty — who an escalation goes to.
+ *
+ * Derived from the role rather than written out again, so a referral always
+ * lands with the supervisor the demo can actually sign in as. Enforcement has
+ * a second supervisor (`SMC-0209`), and the seeded escalations sit with her:
+ * the duty supervisor is handed exactly one, so signing in as them shows a
+ * referral waiting rather than a backlog nobody built.
+ */
+export const DUTY_SUPERVISOR = {
+  id: ROLES[1].staff.code,
+  name: ROLES[1].staff.name,
+}
+
 /** Officers a supervisor can assign work to. */
 export const OFFICERS = [
   { id: "SMC-0318", name: "Layla Al-Hammadi" },

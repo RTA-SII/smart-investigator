@@ -9,7 +9,7 @@ import { useComplaints } from "@/app/complaintStore"
 import { roleById } from "@/data/personas"
 import { useSession } from "@/app/session"
 import { applyFilters, EMPTY_FILTERS } from "@/lib/filters"
-import { isOpenFor } from "@/lib/cht"
+import { isMine, isMineOpen } from "@/lib/ownership"
 import { useT } from "@/i18n"
 
 const SCOPES = [
@@ -18,10 +18,16 @@ const SCOPES = [
 ]
 
 /**
- * The officer's own workload — everything that has been assigned to them.
+ * What is on the signed-in person's desk.
  *
- * Defaults to All, not Open: a complaint they have just closed has to stay on
- * screen, marked Closed, or the work appears to vanish the moment it is done.
+ * For an officer that is everything assigned to them. For a supervisor it is
+ * what officers have referred upward: they hold no complaints of their own, so
+ * asking for their assignments left this page permanently empty and an
+ * escalation could only be found on All Complaints, among everything else.
+ *
+ * Defaults to All, not Open: a complaint they have just ruled on has to stay
+ * on screen, marked Closed, or the work appears to vanish the moment it is
+ * done.
  */
 export function MyQueue() {
   const session = useSession()
@@ -30,13 +36,14 @@ export function MyQueue() {
   const [scope, setScope] = useState("all")
   const [filters, setFilters] = useState(EMPTY_FILTERS)
   const complaints = useComplaints()
+  const supervisor = role.id === "supervisor"
 
-  // The mode tiles count this set — everything of the officer's in scope,
-  // before the dropdowns narrow it.
+  // The mode tiles count this set — everything of theirs in scope, before the
+  // dropdowns narrow it.
   const scoped = useMemo(() => {
-    const mine = complaints.filter((c) => c.assignee?.id === role.staff.code)
-    return scope === "open" ? mine.filter((c) => c.stage !== "Closed") : mine
-  }, [complaints, role.staff.code, scope])
+    const mine = complaints.filter((c) => isMine(c, role))
+    return scope === "open" ? mine.filter((c) => isMineOpen(c, role)) : mine
+  }, [complaints, role, scope])
 
   const rows = useMemo(() => applyFilters(scoped, filters), [scoped, filters])
 
@@ -44,7 +51,11 @@ export function MyQueue() {
     <>
       <PageHeader
         title={t("My Complaints")}
-        subtitle={`${t(role.title)} · ${role.staff.name} · ${role.staff.code}`}
+        // A supervisor's list is referrals, not assignments, and the page has
+        // to say so — otherwise a short list reads as a broken filter.
+        subtitle={`${t(
+          supervisor ? "Escalations referred to you for a ruling" : role.title,
+        )} · ${role.staff.name} · ${role.staff.code}`}
         actions={
           <Segmented
             options={SCOPES.map((s) => ({ ...s, label: t(s.label) }))}
@@ -65,14 +76,22 @@ export function MyQueue() {
         filters={filters}
         onChange={setFilters}
         count={rows.length}
-        open={rows.filter((c) => isOpenFor(c, role.staff.code)).length}
+        open={rows.filter((c) => isMineOpen(c, role)).length}
       />
 
       <Card className="overflow-hidden">
+        {/* A supervisor gets the Assigned To column: on a list of referrals
+            the officer who sent each one up is the context they need, and
+            handing it back to an officer is one of their actions. */}
         <ComplaintTable
           rows={rows}
           verdict={false}
-          emptyLabel={t("Nothing assigned to you in this scope")}
+          assignable={supervisor}
+          emptyLabel={t(
+            supervisor
+              ? "No escalations referred to you in this scope"
+              : "Nothing assigned to you in this scope",
+          )}
         />
       </Card>
     </>

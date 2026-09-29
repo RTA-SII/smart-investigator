@@ -8,8 +8,9 @@ import {
   MODES,
   PRIORITIES,
 } from "./catalog"
-import { OFFICERS, SEED_OFFICERS } from "./personas"
+import { DUTY_SUPERVISOR, OFFICERS, OPERATORS, SEED_OFFICERS } from "./personas"
 import { OFF_DESK } from "@/lib/cht"
+import { wasEscalated } from "@/lib/filters"
 import { buildAi } from "./crossValidation"
 import { DRIVER_FIRST, DRIVER_LAST, FIRST, LAST } from "./names"
 import { frameFor } from "./evidenceFrames"
@@ -365,10 +366,44 @@ function fromRta(c, i) {
   }
 }
 
-export const COMPLAINTS = [
-  ...RTA_CASES.map(fromRta),
-  ...Array.from({ length: 96 }, (_, i) => buildOne(i)),
-].sort((a, b) => new Date(b.receivedAt) - new Date(a.receivedAt))
+/**
+ * Which supervisor each referral is waiting on.
+ *
+ * A complaint that went up is with a *named* supervisor, not with "a
+ * supervisor" — that field is what puts it on their My Complaints, because a
+ * supervisor is never the assignee. The escalating officer keeps the
+ * investigation and stays on `assignee`, which is where the escalation filter
+ * reads "escalated by" from.
+ *
+ * The duty supervisor — the one the demo signs in as — is dealt exactly one
+ * open referral, so they sign in to a case waiting for a ruling rather than a
+ * backlog. Everything else escalated sits with Enforcement's supervisor,
+ * which is also what gives the "Escalated to person" facet two values to
+ * separate.
+ */
+function routeEscalations(rows) {
+  const other = OPERATORS.find(
+    (o) => o.role === "Supervisor" && o.id !== DUTY_SUPERVISOR.id,
+  )
+  let dealt = false
+
+  for (const c of rows) {
+    if (!wasEscalated(c)) continue
+    const duty = c.stage === "Escalated" && !dealt
+    if (duty) dealt = true
+    c.escalatedTo = duty
+      ? { ...DUTY_SUPERVISOR }
+      : { id: other.id, name: other.name }
+  }
+  return rows
+}
+
+export const COMPLAINTS = routeEscalations(
+  [
+    ...RTA_CASES.map(fromRta),
+    ...Array.from({ length: 96 }, (_, i) => buildOne(i)),
+  ].sort((a, b) => new Date(b.receivedAt) - new Date(a.receivedAt)),
+)
 
 export function complaintById(id) {
   return COMPLAINTS.find((c) => c.id === id)

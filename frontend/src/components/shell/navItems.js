@@ -1,5 +1,5 @@
 import { Bell, ClipboardList, LayoutDashboard, CirclePlus } from "lucide-react"
-import { isOpenFor } from "@/lib/cht"
+import { isMineOpen } from "@/lib/ownership"
 
 /**
  * Nav for this module only — no other SMC modules appear. The shape follows
@@ -9,11 +9,12 @@ import { isOpenFor } from "@/lib/cht"
  */
 export function navSections(role, complaints) {
   // Estate-wide, anything unsettled is outstanding — a returned case is
-  // still somebody's problem. On the officer's own badge it is not: their
+  // still somebody's problem. On the person's own badge it is not: their
   // count is what they can act on, the same rule the arrival scheduler and
-  // My Productivity use.
+  // My Productivity use. For a supervisor that is the referrals waiting on a
+  // ruling, which is what makes an escalation announce itself at sign-in.
   const openCount = complaints.filter((c) => c.stage !== "Closed").length
-  const mineCount = complaints.filter((c) => isOpenFor(c, role.staff.code)).length
+  const mineCount = complaints.filter((c) => isMineOpen(c, role)).length
 
   const work = [
     { to: "/my-queue", label: "My Complaints", icon: Bell, count: mineCount },

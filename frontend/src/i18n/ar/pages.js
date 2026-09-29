@@ -24,7 +24,7 @@ export const pages = {
   "Team Caseload": "حِمل الفريق",
   "Team Productivity": "إنتاجية الفريق",
   "Awaiting Ruling": "بانتظار القرار",
-  "Referred up to you": "مُحالة إليك",
+  "Awaiting a supervisor ruling": "بانتظار قرار المشرف",
   "With a supervisor": "لدى المشرف",
   "Still with an officer": "لا تزال لدى ضابط",
   "Ruled on by the team": "بتَّ فيها الفريق",
@@ -129,6 +129,9 @@ export const pages = {
   All: "الكل",
   Nothing: "لا شيء",
   "Nothing assigned to you in this scope": "لا توجد شكاوى مُسندة إليك ضمن هذا النطاق",
+  "No escalations referred to you in this scope":
+    "لا توجد إحالات مُحوّلة إليك ضمن هذا النطاق",
+  "Escalations referred to you for a ruling": "إحالات محوّلة إليك للبتّ فيها",
 
   // The Take Action card — RTA's verified findings.
   // The productivity strip.

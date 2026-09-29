@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react"
 import { COMPLAINTS, NOW } from "@/data/complaints"
+import { DUTY_SUPERVISOR } from "@/data/personas"
 
 /**
  * The live complaint set.
@@ -22,7 +23,7 @@ import { COMPLAINTS, NOW } from "@/data/complaints"
  * was renamed to `Confirmed`. The version is in the key, and older keys are
  * swept on load, so that cannot happen silently again.
  */
-const DATA_VERSION = 12
+const DATA_VERSION = 13
 const KEY = `smc-complaints-data.v${DATA_VERSION}`
 const LEGACY_KEYS = [
   "smc-complaints-data",
@@ -39,6 +40,9 @@ const LEGACY_KEYS = [
   "smc-complaints-data.v9",
   "smc-complaints-data.v10",
   "smc-complaints-data.v11",
+  // 12 had no `escalatedTo`, so a referral saved under it would never reach
+  // the supervisor's own list.
+  "smc-complaints-data.v12",
 ]
 
 /**
@@ -155,6 +159,16 @@ export function decide(
       ? { id: officer.id, name: officer.name }
       : complaint.assignee
 
+  // Who the referral is now waiting on. The assignee deliberately does not
+  // move — the officer keeps the investigation, and the escalation filter
+  // reads that field to say who sent it up — so without this the complaint
+  // changed stage and belonged to nobody: it showed on All Complaints and on
+  // no list that said it was a supervisor's to rule on.
+  const escalatedTo =
+    move.stage === "Escalated"
+      ? (complaint.escalatedTo ?? DUTY_SUPERVISOR)
+      : complaint.escalatedTo
+
   // Measured against wall time, not the demo clock: `pulledAt` is stamped
   // when the complaint lands and the SLA counts down in real seconds, so the
   // two ends of the measurement have to agree on which clock they are on.
@@ -170,6 +184,7 @@ export function decide(
     handlingMinutes,
     penalty: applied,
     assignee: owner,
+    escalatedTo,
     // A reassigned complaint is live again, so the handling time restarts.
     pulledAt: action.id === "reassign" ? null : complaint.pulledAt,
     decision: { id: action.id, label: action.label, note, by, penalty: applied, at: stamp() },

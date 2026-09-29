@@ -74,8 +74,11 @@ export function applyFilters(rows, f) {
  * The escalation facets, which only bite once one is set.
  *
  * "Escalated by" is the officer who referred it upward — the assignee at the
- * time, which is still on the complaint. "Escalated to" is whoever rules on
- * it; in this module that is always a supervisor.
+ * time, which is still on the complaint. "Escalated to" is the supervisor it
+ * is waiting on, which is the field that also puts it on their My Complaints.
+ * It used to read the ruling record instead, so it matched nothing at all on a
+ * referral that had not been ruled on yet — which is every referral the filter
+ * exists to find.
  */
 function matchesEscalation(c, f) {
   const any =
@@ -91,8 +94,7 @@ function matchesEscalation(c, f) {
   if (!hits(f.escalatedBy, c.assignee?.name)) return false
   if (!hits(f.escalatedByRole, "Investigation Officer")) return false
   if (!hits(f.escalatedToRole, "Supervisor")) return false
-  if (f.escalatedTo.length && !f.escalatedTo.includes(c.decision?.by?.split(" · ")[0]))
-    return false
+  if (!hits(f.escalatedTo, c.escalatedTo?.name)) return false
 
   if (f.escalationOutcome.length) {
     const outcome = c.stage === "Closed" ? "Escalated and closed" : "Escalated and not closed"
