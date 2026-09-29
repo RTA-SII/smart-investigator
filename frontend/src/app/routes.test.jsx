@@ -5,7 +5,7 @@ import { RouterProvider, createMemoryRouter } from "react-router-dom"
 import { App } from "./App"
 import { signIn, signOut } from "./session"
 import { resetComplaints, allComplaints } from "./complaintStore"
-import { RolePicker } from "@/pages/RolePicker"
+import { Login } from "@/pages/Login"
 import { Dashboard } from "@/pages/Dashboard"
 import { Complaints } from "@/pages/Complaints"
 import { ComplaintDetail } from "@/pages/ComplaintDetail"
@@ -35,7 +35,7 @@ const ROUTES = [
 function renderAt(path) {
   const router = createMemoryRouter(
     [
-      { path: "/", element: <RolePicker /> },
+      { path: "/", element: <Login /> },
       { element: <App />, children: ROUTES },
     ],
     { initialEntries: [path] },

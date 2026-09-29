@@ -8,18 +8,28 @@ handling target.
 
 **▶ [Open the demo](https://rta-sii.github.io/smart-investigator/)**
 
-Access to the demo is moving behind Cloudflare Access, which stops a visitor
-at the edge and sends them an email code before the site is served at all —
-see [DEPLOY.md](DEPLOY.md). The GitHub Pages link above is the open copy and
-is retired at the end of that process.
+## Signing in
 
-Once past the gate there is no second sign-in: pick a role on the landing
-screen.
+The username is the account, and the role follows from it — there is no role
+picker. Both accounts share one password.
 
-| Role | What they do |
-|---|---|
-| **Investigation Officer** | Complaints are handed to them one at a time. Run the AI cross-validation, then close as False Positive, No Fine Required, Issue Fine — or escalate where the evidence is thin. |
-| **Supervisor** | Monitors the centre, sees every complaint, assigns work by hand, and rules on referrals. |
+| Username | Password | Role | What they do |
+|---|---|---|---|
+| `officer1` | `Ducont1234` | **Investigation Officer** | Complaints are handed to them one at a time. Run the AI cross-validation, then rule — or escalate where the evidence is thin. |
+| `supervisor1` | `Ducont1234` | **Supervisor** | Monitors the centre, sees every complaint, assigns work by hand, and rules on the referrals officers send up. |
+
+A six-digit passcode step follows, and it fills itself in — there is nowhere
+to send an SMS from, and a demo that can lock its own presenter out of the
+room is worse than no demo at all. The password is the part that is really
+checked.
+
+**That check runs in the browser, so it is a front door and not a lock.** This
+is a static site: the whole bundle reaches the visitor before any of it runs.
+The passwords are stored as SHA-256 rather than in the clear, which is enough
+to stop a casual look and nothing more. Real access control is Cloudflare
+Access, in front of the site, where a stranger is turned away before the app is
+served at all — see [DEPLOY.md](DEPLOY.md). The GitHub Pages link above is the
+open copy and is retired at the end of that process.
 
 Sign in as the officer and the demo runs itself: the queue starts empty, a
 complaint is assigned three seconds later with its clock already running, and

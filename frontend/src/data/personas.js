@@ -12,7 +12,9 @@ export const ROLES = [
     scope: "Investigates assigned complaints",
     icon: "search",
     tone: "primary",
-    staff: { name: "Layla Al-Hammadi", code: "SMC-0318", handle: "investigator1" },
+    // `handle` is the sign-in username — see `app/auth.js`, which maps it back
+    // to this role. The two have to stay in step.
+    staff: { name: "Layla Al-Hammadi", code: "SMC-0318", handle: "officer1" },
   },
   {
     id: "supervisor",
